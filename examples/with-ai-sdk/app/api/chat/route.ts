@@ -1,4 +1,4 @@
-import { weatherTool } from "@/tools";
+import { weatherTool } from "@/lib/tools";
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
 

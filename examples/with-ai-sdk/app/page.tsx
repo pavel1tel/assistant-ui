@@ -4,40 +4,40 @@ import { getToolUI, registerTool } from "@assistant-ui/react";
 import { Thread } from "@assistant-ui/react-ui";
 import { useChat } from "@ai-sdk/react";
 import { z } from "zod";
-import { webSearchTool } from "@/tools";
+// import { webSearchTool } from "@/lib/tools";
 
-const WebSearchToolUI = getToolUI({
-  tool: webSearchTool,
-  render: ({ status, result, addResult }) => {
-    return (
-      <div className="rounded-lg border p-4">
-        status: {status.type}
-        {/* <button
-          onClick={() =>
-            addResult({
-              location: "sf",
-              temperature: 100,
-            })
-          }
-        >
-          complete
-        </button> */}
-        {status.type === "complete" ? (
-          <div className="space-y-2">
-            <p>
-              <strong>Location:</strong> {result?.location}
-            </p>
-            <p>
-              <strong>Temperature:</strong> {result?.temperature}°C
-            </p>
-          </div>
-        ) : (
-          <p>Loading weather data...</p>
-        )}
-      </div>
-    );
-  },
-});
+// const WebSearchToolUI = getToolUI({
+//   tool: webSearchTool,
+//   render: ({ status, result, addResult }) => {
+//     return (
+//       <div className="rounded-lg border p-4">
+//         status: {status.type}
+//         {/* <button
+//           onClick={() =>
+//             addResult({
+//               location: "sf",
+//               temperature: 100,
+//             })
+//           }
+//         >
+//           complete
+//         </button> */}
+//         {status.type === "complete" ? (
+//           <div className="space-y-2">
+//             <p>
+//               <strong>Location:</strong> {result?.location}
+//             </p>
+//             <p>
+//               <strong>Temperature:</strong> {result?.temperature}°C
+//             </p>
+//           </div>
+//         ) : (
+//           <p>Loading weather data...</p>
+//         )}
+//       </div>
+//     );
+//   },
+// });
 
 // Proposal for registering individual tools in codebase
 // const Confirm = registerTool({
@@ -95,13 +95,12 @@ const WebSearchToolUI = getToolUI({
 //     );
 //   },
 // }).getUI();
-import { Thread } from "@/components/assistant-ui/thread";
 
 export default function Home() {
   return (
     <main className="h-full">
       {/* <Tools /> */}
-      <WebSearchToolUI />
+      {/* <WebSearchToolUI /> */}
       <Thread />
     </main>
   );
