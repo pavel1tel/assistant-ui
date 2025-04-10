@@ -25,7 +25,7 @@ export type {
   Tool,
 } from "./ModelContextTypes";
 
-export { aiSDKAdapter, auiServerTool } from "./tool";
+export { aiSDKAdapter, auiTool } from "./tool";
 export { getToolUI } from "./getToolUI";
 export { registerTool } from "./getTool";
 
