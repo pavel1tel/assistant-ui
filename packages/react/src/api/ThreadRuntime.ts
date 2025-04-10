@@ -5,6 +5,7 @@ import {
   SpeechState,
   ThreadRuntimeEventType,
   StartRunConfig,
+  ResumeRunConfig,
 } from "../runtimes/core/ThreadRuntimeCore";
 import { ExportedMessageRepository } from "../runtimes/utils/MessageRepository";
 import { AppendMessage, ThreadMessage, Unsubscribe } from "../types";
@@ -31,11 +32,27 @@ import { RunConfig } from "../types/AssistantTypes";
 import { EventSubscriptionSubject } from "./subscribable/EventSubscriptionSubject";
 import { symbolInnerMessage } from "../runtimes/external-store/getExternalStoreMessage";
 import { ModelContext } from "../model-context";
+import { ChatModelRunOptions, ChatModelRunResult } from "../runtimes";
 
 export type CreateStartRunConfig = {
   parentId: string | null;
   sourceId?: string | null | undefined;
   runConfig?: RunConfig | undefined;
+};
+
+export type CreateResumeRunConfig = CreateStartRunConfig & {
+  stream: (
+    options: ChatModelRunOptions,
+  ) => AsyncGenerator<ChatModelRunResult, void, unknown>;
+};
+
+const toResumeRunConfig = (message: CreateResumeRunConfig): ResumeRunConfig => {
+  return {
+    parentId: message.parentId ?? null,
+    sourceId: message.sourceId ?? null,
+    runConfig: message.runConfig ?? {},
+    stream: message.stream,
+  };
 };
 
 const toStartRunConfig = (message: CreateStartRunConfig): StartRunConfig => {
@@ -211,6 +228,13 @@ export type ThreadRuntime = {
    * @param config The configuration for starting the run
    */
   startRun(config: CreateStartRunConfig): void;
+
+  /**
+   * Resume a run with the given configuration.
+   * @param config The configuration for resuming the run
+   **/
+  unstable_resumeRun(config: CreateResumeRunConfig): void;
+
   subscribe(callback: () => void): Unsubscribe;
   cancelRun(): void;
   getModelContext(): ModelContext;
@@ -290,6 +314,7 @@ export class ThreadRuntimeImpl implements ThreadRuntime {
 
   protected __internal_bindMethods() {
     this.append = this.append.bind(this);
+    this.unstable_resumeRun = this.unstable_resumeRun.bind(this);
     this.startRun = this.startRun.bind(this);
     this.cancelRun = this.cancelRun.bind(this);
     this.stopSpeaking = this.stopSpeaking.bind(this);
@@ -336,6 +361,10 @@ export class ThreadRuntimeImpl implements ThreadRuntime {
         ? { parentId: configOrParentId }
         : configOrParentId;
     return this._threadBinding.getState().startRun(toStartRunConfig(config));
+  }
+
+  public unstable_resumeRun(config: CreateResumeRunConfig) {
+    return this._threadBinding.getState().resumeRun(toResumeRunConfig(config));
   }
 
   public cancelRun() {

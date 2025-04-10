@@ -1,5 +1,48 @@
 # assistant-stream
 
+## 0.0.32
+
+### Patch Changes
+
+- 545a17c: fix: do not crash on tool call with empty argsText
+
+## 0.0.31
+
+### Patch Changes
+
+- 93c3eb4: fix: drop ToolResponseBrand
+
+## 0.0.30
+
+### Patch Changes
+
+- a22bc7a: refactor: merge setResult and setArtifact to setResponse
+- 39aecd7: chore: update dependencies
+
+## 0.0.29
+
+### Patch Changes
+
+- feat: expose assitant-stream ToolResponse API
+
+## 0.0.28
+
+### Patch Changes
+
+- 40579cd: feat: ToolResponse support
+
+## 0.0.27
+
+### Patch Changes
+
+- fix: assistant-stream appendText must only append to the very last part
+
+## 0.0.26
+
+### Patch Changes
+
+- c4d7b29: feat: tool call artifacts
+
 ## 0.0.25
 
 ### Patch Changes

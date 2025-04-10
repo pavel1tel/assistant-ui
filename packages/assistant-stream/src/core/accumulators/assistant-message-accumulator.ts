@@ -31,7 +31,7 @@ const createInitialMessage = (): AssistantMessage => ({
 const updatePartForPath = (
   message: AssistantMessage,
   chunk: AssistantStreamChunk,
-  updater: (lastPart: AssistantMessagePart) => AssistantMessagePart,
+  updater: (part: AssistantMessagePart) => AssistantMessagePart,
 ): AssistantMessage => {
   if (message.parts.length === 0) {
     throw new Error("No parts available to update.");
@@ -129,12 +129,12 @@ const handleToolCallArgsTextFinish = (
     readonly type: "tool-call-args-text-finish";
   },
 ): AssistantMessage => {
-  return updatePartForPath(message, chunk, (lastPart) => {
-    if (lastPart.type !== "tool-call") {
-      throw new Error("Last part is not a tool call");
+  return updatePartForPath(message, chunk, (part) => {
+    if (part.type !== "tool-call") {
+      throw new Error("Last is not a tool call");
     }
     return {
-      ...lastPart,
+      ...part,
       state: "call",
     };
   });
@@ -144,8 +144,8 @@ const handlePartFinish = (
   message: AssistantMessage,
   chunk: AssistantStreamChunk & { readonly type: "part-finish" },
 ): AssistantMessage => {
-  return updatePartForPath(message, chunk, (lastPart) => ({
-    ...lastPart,
+  return updatePartForPath(message, chunk, (part) => ({
+    ...part,
     status: { type: "complete", reason: "unknown" },
   }));
 };
@@ -154,21 +154,21 @@ const handleTextDelta = (
   message: AssistantMessage,
   chunk: AssistantStreamChunk & { type: "text-delta" },
 ): AssistantMessage => {
-  return updatePartForPath(message, chunk, (lastPart) => {
-    if (lastPart.type === "text") {
-      return { ...lastPart, text: lastPart.text + chunk.textDelta };
-    } else if (lastPart.type === "tool-call") {
-      const newArgsText = lastPart.argsText + chunk.textDelta;
+  return updatePartForPath(message, chunk, (part) => {
+    if (part.type === "text") {
+      return { ...part, text: part.text + chunk.textDelta };
+    } else if (part.type === "tool-call") {
+      const newArgsText = part.argsText + chunk.textDelta;
       let newArgs: ReadonlyJSONObject;
       try {
         newArgs = parsePartialJson(newArgsText);
       } catch (err) {
-        newArgs = lastPart.args;
+        newArgs = part.args;
       }
-      return { ...lastPart, argsText: newArgsText, args: newArgs };
+      return { ...part, argsText: newArgsText, args: newArgs };
     } else {
       throw new Error(
-        "text-delta received but last part is neither text nor tool-call",
+        "text-delta received but part is neither text nor tool-call",
       );
     }
   });
@@ -178,17 +178,18 @@ const handleResult = (
   message: AssistantMessage,
   chunk: AssistantStreamChunk & { type: "result" },
 ): AssistantMessage => {
-  return updatePartForPath(message, chunk, (lastPart) => {
-    if (lastPart.type === "tool-call") {
+  return updatePartForPath(message, chunk, (part) => {
+    if (part.type === "tool-call") {
       return {
-        ...lastPart,
+        ...part,
         state: "result",
+        artifact: chunk.artifact,
         result: chunk.result,
         isError: chunk.isError ?? false,
         status: { type: "complete", reason: "stop" },
       };
     } else {
-      throw new Error("Result chunk received but last part is not a tool-call");
+      throw new Error("Result chunk received but part is not a tool-call");
     }
   });
 };
@@ -322,8 +323,12 @@ export class AssistantMessageAccumulator extends TransformStream<
   AssistantStreamChunk,
   AssistantMessage
 > {
-  constructor() {
-    let message: AssistantMessage = createInitialMessage();
+  constructor({
+    initialMessage,
+  }: {
+    initialMessage?: AssistantMessage;
+  } = {}) {
+    let message = initialMessage ?? createInitialMessage();
     super({
       transform(chunk, controller) {
         const type = chunk.type;

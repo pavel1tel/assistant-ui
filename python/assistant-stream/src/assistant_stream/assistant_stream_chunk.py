@@ -27,6 +27,8 @@ class ToolCallDeltaChunk:
 class ToolResultChunk:
     tool_call_id: str
     result: Any
+    artifact: Any | None
+    is_error: bool
     type: str = "tool-result"
 
 
@@ -34,6 +36,7 @@ class ToolResultChunk:
 class DataChunk:
     data: Any
     type: str = "data"
+
 
 @dataclass
 class ErrorChunk:
@@ -43,5 +46,10 @@ class ErrorChunk:
 
 # Define the union type for AssistantStreamChunk
 AssistantStreamChunk = Union[
-    TextDeltaChunk, ToolCallBeginChunk, ToolCallDeltaChunk, ToolResultChunk, DataChunk, ErrorChunk
+    TextDeltaChunk,
+    ToolCallBeginChunk,
+    ToolCallDeltaChunk,
+    ToolResultChunk,
+    DataChunk,
+    ErrorChunk,
 ]

@@ -1,5 +1,69 @@
 # @assistant-ui/react
 
+## 0.8.20
+
+### Patch Changes
+
+- Updated dependencies [545a17c]
+  - assistant-stream@0.0.32
+
+## 0.8.19
+
+### Patch Changes
+
+- 93c3eb4: fix: drop ToolResponseBrand
+- Updated dependencies [93c3eb4]
+  - assistant-stream@0.0.31
+
+## 0.8.18
+
+### Patch Changes
+
+- a22bc7a: refactor: merge setResult and setArtifact to setResponse
+- 39aecd7: chore: update dependencies
+- Updated dependencies [a22bc7a]
+- Updated dependencies [39aecd7]
+  - assistant-stream@0.0.30
+
+## 0.8.17
+
+### Patch Changes
+
+- feat: expose assitant-stream ToolResponse API
+- Updated dependencies
+  - assistant-stream@0.0.29
+
+## 0.8.16
+
+### Patch Changes
+
+- 40579cd: feat: ToolResponse support
+- Updated dependencies [40579cd]
+  - assistant-stream@0.0.28
+
+## 0.8.15
+
+### Patch Changes
+
+- fix: assistant-stream appendText must only append to the very last part
+- Updated dependencies
+  - assistant-stream@0.0.27
+
+## 0.8.14
+
+### Patch Changes
+
+- feat: update resumeRun signature
+
+## 0.8.12
+
+### Patch Changes
+
+- c4d7b29: feat: tool call artifacts
+- 0962274: feat: ThreadRuntime.unstable_resumeRun
+- Updated dependencies [c4d7b29]
+  - assistant-stream@0.0.26
+
 ## 0.8.11
 
 ### Patch Changes

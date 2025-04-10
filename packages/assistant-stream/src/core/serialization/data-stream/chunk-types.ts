@@ -1,4 +1,7 @@
-import { ReadonlyJSONValue } from "../../utils/json/json-value";
+import {
+  ReadonlyJSONObject,
+  ReadonlyJSONValue,
+} from "../../utils/json/json-value";
 
 export type DataStreamChunk = {
   [K in DataStreamStreamChunkType]: {
@@ -29,7 +32,7 @@ export enum DataStreamStreamChunkType {
   ToolCall = "9",
   ToolCallResult = "a",
   StartToolCall = "b",
-  ToolCallDelta = "c",
+  ToolCallArgsTextDelta = "c",
   FinishMessage = "d",
   FinishStep = "e",
   StartStep = "f",
@@ -46,19 +49,23 @@ type DataStreamStreamChunkValue = {
   [DataStreamStreamChunkType.ToolCall]: {
     toolCallId: string;
     toolName: string;
-    args: unknown;
+    args: ReadonlyJSONObject;
   };
   [DataStreamStreamChunkType.StartToolCall]: {
     toolCallId: string;
     toolName: string;
   };
-  [DataStreamStreamChunkType.ToolCallDelta]: {
+  [DataStreamStreamChunkType.ToolCallArgsTextDelta]: {
     toolCallId: string;
     argsTextDelta: string;
   };
   [DataStreamStreamChunkType.ToolCallResult]: {
     toolCallId: string;
     result: ReadonlyJSONValue;
+
+    // aui-extensions
+    artifact?: ReadonlyJSONValue | undefined;
+    isError?: boolean;
   };
   [DataStreamStreamChunkType.Error]: string;
   [DataStreamStreamChunkType.FinishStep]: {

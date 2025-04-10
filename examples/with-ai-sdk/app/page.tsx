@@ -95,6 +95,7 @@ const WebSearchToolUI = getToolUI({
 //     );
 //   },
 // }).getUI();
+import { Thread } from "@/components/assistant-ui/thread";
 
 export default function Home() {
   return (

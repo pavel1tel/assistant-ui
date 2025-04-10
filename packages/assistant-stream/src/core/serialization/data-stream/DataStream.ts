@@ -70,7 +70,7 @@ export class DataStreamEncoder
                 }
                 case "tool-call": {
                   controller.enqueue({
-                    type: DataStreamStreamChunkType.ToolCallDelta,
+                    type: DataStreamStreamChunkType.ToolCallArgsTextDelta,
                     value: {
                       toolCallId: part.toolCallId,
                       argsTextDelta: chunk.textDelta,
@@ -98,6 +98,8 @@ export class DataStreamEncoder
                 value: {
                   toolCallId: part.toolCallId,
                   result: chunk.result,
+                  artifact: chunk.artifact,
+                  ...(chunk.isError ? { isError: chunk.isError } : {}),
                 },
               });
               break;
@@ -220,7 +222,7 @@ export class DataStreamDecoder extends PipeableTransformStream<
               break;
             }
 
-            case DataStreamStreamChunkType.ToolCallDelta: {
+            case DataStreamStreamChunkType.ToolCallArgsTextDelta: {
               const { toolCallId, argsTextDelta } = value;
               const toolCallController = toolCallControllers.get(toolCallId);
               if (!toolCallController)
@@ -232,13 +234,17 @@ export class DataStreamDecoder extends PipeableTransformStream<
             }
 
             case DataStreamStreamChunkType.ToolCallResult: {
-              const { toolCallId, result } = value;
+              const { toolCallId, artifact, result, isError } = value;
               const toolCallController = toolCallControllers.get(toolCallId);
               if (!toolCallController)
                 throw new Error(
                   "Encountered tool call result with unknown id: " + toolCallId,
                 );
-              toolCallController.setResult(result);
+              toolCallController.setResponse({
+                artifact,
+                result,
+                isError,
+              });
               break;
             }
 
@@ -248,10 +254,9 @@ export class DataStreamDecoder extends PipeableTransformStream<
               const toolCallController = controller.addToolCallPart({
                 toolCallId,
                 toolName,
+                args,
               });
               toolCallControllers.set(toolCallId, toolCallController);
-              toolCallController.argsText.append(JSON.stringify(args));
-              toolCallController.argsText.close();
               break;
             }
 

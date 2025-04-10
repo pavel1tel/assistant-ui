@@ -18,6 +18,15 @@ import {
   ReadonlyJSONObject,
   ReadonlyJSONValue,
 } from "../utils/json/json-value";
+import { ToolResponseInit } from "../ToolResponse";
+
+type ToolCallPartInit = {
+  toolCallId?: string;
+  toolName: string;
+  argsText?: string;
+  args?: ReadonlyJSONObject;
+  response?: ToolResponseInit<ReadonlyJSONValue>;
+};
 
 export type AssistantStreamController = {
   appendText(textDelta: string): void;
@@ -25,15 +34,8 @@ export type AssistantStreamController = {
   appendSource(options: SourcePart): void;
   appendFile(options: FilePart): void;
   addTextPart(): TextStreamController;
-  addToolCallPart(toolName: string): ToolCallStreamController;
-  addToolCallPart(options: {
-    toolCallId?: string;
-    toolName: string;
-    args?: ReadonlyJSONObject;
-    result?: ReadonlyJSONValue;
-    isError?: boolean;
-  }): ToolCallStreamController;
-
+  addToolCallPart(options: string): ToolCallStreamController;
+  addToolCallPart(options: ToolCallPartInit): ToolCallStreamController;
   enqueue(chunk: AssistantStreamChunk): void;
   merge(stream: AssistantStream): void;
   close(): void;
@@ -63,6 +65,11 @@ class AssistantStreamControllerImpl implements AssistantStreamController {
   }
 
   private _addPart(part: PartInit, stream: AssistantStream) {
+    if (this._append) {
+      this._append.controller.close();
+      this._append = undefined;
+    }
+
     this.enqueue({
       type: "part-start",
       part,
@@ -81,10 +88,6 @@ class AssistantStreamControllerImpl implements AssistantStreamController {
 
   appendText(textDelta: string) {
     if (this._append?.kind !== "text") {
-      if (this._append) {
-        this._append.controller.close();
-      }
-
       this._append = {
         kind: "text",
         controller: this.addTextPart(),
@@ -95,10 +98,6 @@ class AssistantStreamControllerImpl implements AssistantStreamController {
 
   appendReasoning(textDelta: string) {
     if (this._append?.kind !== "reasoning") {
-      if (this._append) {
-        this._append.controller.close();
-      }
-
       this._append = {
         kind: "reasoning",
         controller: this.addReasoningPart(),
@@ -120,15 +119,7 @@ class AssistantStreamControllerImpl implements AssistantStreamController {
   }
 
   addToolCallPart(
-    options:
-      | string
-      | {
-          toolCallId?: string;
-          toolName: string;
-          args?: Record<string, unknown>;
-          result?: ReadonlyJSONValue;
-          isError?: boolean;
-        },
+    options: string | ToolCallPartInit,
   ): ToolCallStreamController {
     const opt = typeof options === "string" ? { toolName: options } : options;
     const toolName = opt.toolName;
@@ -137,12 +128,16 @@ class AssistantStreamControllerImpl implements AssistantStreamController {
     const [stream, controller] = createToolCallStreamController();
     this._addPart({ type: "tool-call", toolName, toolCallId }, stream);
 
+    if (opt.argsText !== undefined) {
+      controller.argsText.append(opt.argsText);
+      controller.argsText.close();
+    }
     if (opt.args !== undefined) {
       controller.argsText.append(JSON.stringify(opt.args));
       controller.argsText.close();
     }
-    if (opt.result !== undefined) {
-      controller.setResult(opt.result, opt.isError);
+    if (opt.response !== undefined) {
+      controller.setResponse(opt.response);
     }
 
     return controller;
