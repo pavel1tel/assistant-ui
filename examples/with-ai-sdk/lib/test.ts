@@ -37,3 +37,13 @@ const a = {
     schema: z.string(),
   },
 } satisfies Test2;
+
+// optional helper functions if you have mixed tool calls?
+
+// nice to have, onToolInvocationComplete as a middleware back from the tool call before it get's rendered.
+// ( save stuff, make other requests, etc )
+
+/*
+ client side .execute means no addResult
+ client side no .execute means addResult.
+*/

@@ -21,6 +21,7 @@ export type RuntimeCapabilities = {
   readonly feedback: boolean;
 };
 
+// Mark
 export type AddToolResultOptions = {
   messageId: string;
   toolName: string;
