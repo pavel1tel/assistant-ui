@@ -42,7 +42,7 @@ const aiSDKTools = {
   getLocationFromUser: tool({
     description:
       "Asks the user for their location if the user does provide one.",
-    parameters: z.never(),
+    parameters: z.string(),
   }),
 } satisfies AssistantUITools;
 
@@ -54,7 +54,7 @@ export type Tools = typeof aiSDKTools;
 
 const toolboxs = assistantUIToolbox<Tools>({
   getLocationFromUser: {
-    execute: "test",
+    execute: async (arg) => arg,
   },
 });
 

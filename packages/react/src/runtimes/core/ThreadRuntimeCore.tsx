@@ -299,7 +299,13 @@ export type ClientSideTools<T extends AssistantUITools> = {
   //   execute: "hi!";
   // };
   [K in keyof T as T[K]["execute"] extends undefined ? K : never]: {
-    execute: "hi!";
+    execute: (
+      args: inferParameters<
+        T[K]["parameters"] extends z.ZodTypeAny
+          ? T[K]["parameters"]
+          : z.ZodNever
+      >,
+    ) => PromiseLike<unknown>;
   };
 };
 
