@@ -130,3 +130,11 @@ type VercelToolShim = {
 // type LangChainToolShim = {}
 
 export type AssistantUITools = Record<string, VercelToolShim>;
+
+export type ClientSideTools<T> = {
+  // [L in keyof T]: A extends keyof T[L] ? string : never;
+  [K in keyof T]: T[K] extends { execute: undefined } ? never : string;
+  // [K in keyof T]: T[K] extends Required<Pick<T[K], "execute">> ? string : never;
+};
+
+function toolBox<T extends AssistantUITools>() {}
