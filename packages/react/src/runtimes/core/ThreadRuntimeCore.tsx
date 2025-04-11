@@ -131,10 +131,180 @@ type VercelToolShim = {
 
 export type AssistantUITools = Record<string, VercelToolShim>;
 
-export type ClientSideTools<T> = {
-  // [L in keyof T]: A extends keyof T[L] ? string : never;
-  [K in keyof T]: T[K] extends { execute: undefined } ? never : string;
-  // [K in keyof T]: T[K] extends Required<Pick<T[K], "execute">> ? string : never;
+// export type ClientSideTools<T> = {
+//   [K in keyof T]: T[K] extends { execute?: unknown }
+//     ? never
+//     : T[K] extends { execute: any }
+//       ? t
+//       : T[K];
+// };
+
+type ToolParameters = z.ZodTypeAny;
+type inferParameters<PARAMETERS extends ToolParameters> =
+  PARAMETERS extends z.ZodTypeAny ? z.infer<PARAMETERS> : never;
+type CoreMessage = any;
+interface ToolExecutionOptions {
+  /**
+   * The ID of the tool call. You can use it e.g. when sending tool-call related information with stream data.
+   */
+  toolCallId: string;
+  /**
+   * Messages that were sent to the language model to initiate the response that contained the tool call.
+   * The messages **do not** include the system prompt nor the assistant response that contained the tool call.
+   */
+  messages: CoreMessage[];
+  /**
+   * An optional abort signal that indicates that the overall operation should be aborted.
+   */
+  abortSignal?: AbortSignal;
+}
+
+type ToolResultContent = Array<
+  | {
+      type: "text";
+      text: string;
+    }
+  | {
+      type: "image";
+      data: string;
+      mimeType?: string;
+    }
+>;
+
+/**
+A tool contains the description and the schema of the input that the tool expects.
+This enables the language model to generate the input.
+
+The tool can also contain an optional execute function for the actual execution function of the tool.
+ */
+type Tool<PARAMETERS extends ToolParameters = any, RESULT = any> = {
+  /**
+  The schema of the input that the tool expects. The language model will use this to generate the input.
+  It is also used to validate the output of the language model.
+  Use descriptions to make the input understandable for the language model.
+     */
+  parameters: PARAMETERS;
+  /**
+  An optional description of what the tool does.
+  Will be used by the language model to decide whether to use the tool.
+  Not used for provider-defined tools.
+     */
+  description?: string;
+  /**
+  Optional conversion function that maps the tool result to multi-part tool content for LLMs.
+     */
+  experimental_toToolResultContent?: (result: RESULT) => ToolResultContent;
+  /**
+  An async function that is called with the arguments from the tool call and produces a result.
+  If not provided, the tool will not be executed automatically.
+  
+  @args is the input of the tool call.
+  @options.abortSignal is a signal that can be used to abort the tool call.
+     */
+  execute?: (
+    args: inferParameters<PARAMETERS>,
+    options: ToolExecutionOptions,
+  ) => PromiseLike<RESULT>;
+} & (
+  | {
+      /**
+Function tool.
+     */
+      type?: undefined | "function";
+    }
+  | {
+      /**
+Provider-defined tool.
+     */
+      type: "provider-defined";
+      /**
+The ID of the tool. Should follow the format `<provider-name>.<tool-name>`.
+     */
+      id: `${string}.${string}`;
+      /**
+The arguments for configuring the tool. Must match the expected arguments defined by the provider for this tool.
+     */
+      args: Record<string, unknown>;
+    }
+);
+/**
+ * @deprecated Use `Tool` instead.
+ */
+type CoreTool<PARAMETERS extends ToolParameters = any, RESULT = any> = Tool<
+  PARAMETERS,
+  RESULT
+>;
+/**
+Helper function for inferring the execute args of a tool.
+ */
+// declare function tool<PARAMETERS extends ToolParameters, RESULT>(
+//   tool: Tool<PARAMETERS, RESULT> & {
+//     execute: (
+//       args: inferParameters<PARAMETERS>,
+//       options: ToolExecutionOptions,
+//     ) => PromiseLike<RESULT>;
+//   },
+// ): Tool<PARAMETERS, RESULT> & {
+//   execute: (
+//     args: inferParameters<PARAMETERS>,
+//     options: ToolExecutionOptions,
+//   ) => PromiseLike<RESULT>;
+// };
+// declare function tool2<PARAMETERS extends ToolParameters, RESULT>(
+//   tool: Tool<PARAMETERS, RESULT> & {
+//     execute?: undefined;
+//   },
+// ): Tool<PARAMETERS, RESULT> & {
+//   execute: undefined;
+// };
+
+// declare function tool<PARAMETERS extends ToolParameters, RESULT>(
+//   tool: Tool<PARAMETERS, RESULT> & {
+//     execute?: undefined;
+//   },
+// ): Tool<PARAMETERS, RESULT> & {
+//   execute: undefined;
+// };
+
+declare function tool<PARAMETERS extends ToolParameters, RESULT>(
+  tool: Tool<PARAMETERS, RESULT> & {
+    execute: (
+      args: inferParameters<PARAMETERS>,
+      options: ToolExecutionOptions,
+    ) => PromiseLike<RESULT>;
+  },
+): Tool<PARAMETERS, RESULT> & {
+  execute: (
+    args: inferParameters<PARAMETERS>,
+    options: ToolExecutionOptions,
+  ) => PromiseLike<RESULT>;
+};
+declare function tool2<PARAMETERS extends ToolParameters, RESULT>(
+  tool: Tool<PARAMETERS, RESULT> & {
+    execute?: undefined;
+  },
+): Tool<PARAMETERS, RESULT> & {
+  execute: undefined;
 };
 
-function toolBox<T extends AssistantUITools>() {}
+export type ClientSideTools<T extends AssistantUITools> = {
+  // [K in keyof T as Pick<T[K], "execute"> extends boolean ? T : K]: T[K];
+  // [K in keyof T as T[K] extends typeof tool2 ? typeof tool2 : typeof tool]: any;
+  // [K in keyof T]: T[K] extends VercelToolShim
+  //   ? T[K]["execute"] extends undefined
+  //     ? { execute: "test" }
+  //     : never
+  //   : never;
+  // [K in keyof T as T[K] extends string ? T : K]: {
+  //   execute: "hi!";
+  // };
+  [K in keyof T as T[K]["execute"] extends undefined ? K : never]: {
+    execute: "hi!";
+  };
+};
+
+export function assistantUIToolbox<T extends AssistantUITools>(
+  args: ClientSideTools<T>,
+) {
+  return args;
+}

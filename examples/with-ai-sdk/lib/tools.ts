@@ -1,4 +1,5 @@
 import {
+  assistantUIToolbox,
   AssistantUITools,
   ClientSideTools,
 } from "@assistant-ui/react/runtimes/core/ThreadRuntimeCore";
@@ -45,13 +46,17 @@ const aiSDKTools = {
   }),
 } satisfies AssistantUITools;
 
-aiSDKTools.getLocationFromUser.execute();
-
 type ClientSide = ClientSideTools<typeof aiSDKTools>;
 
 // const obj ClientSide
 
 export type Tools = typeof aiSDKTools;
+
+const toolboxs = assistantUIToolbox<Tools>({
+  getLocationFromUser: {
+    execute: "test",
+  },
+});
 
 // optional helper functions if you have mixed tool calls?
 
