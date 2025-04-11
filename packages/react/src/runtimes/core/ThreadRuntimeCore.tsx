@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { ModelContext } from "../../model-context";
 import { AppendMessage, ThreadMessage } from "../../types";
 import { RunConfig } from "../../types/AssistantTypes";
@@ -116,3 +117,16 @@ export type ThreadRuntimeCore = Readonly<{
 
   unstable_on(event: ThreadRuntimeEventType, callback: () => void): Unsubscribe;
 }>;
+
+type VercelToolShim = {
+  description?: string;
+  parameters?: z.ZodTypeAny;
+  // MARK: Does the following two parameters need to be improved?
+  execute?: unknown;
+  experimental_toToolResultContent?: unknown;
+};
+
+// TODO: Add langchain / langgraph support.
+// type LangChainToolShim = {}
+
+export type AssistantUITools = Record<string, VercelToolShim>;
