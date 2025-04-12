@@ -126,6 +126,8 @@ type VercelToolShim = {
   experimental_toToolResultContent?: unknown;
 };
 
+type ToolType = VercelToolShim;
+
 // TODO: Add langchain / langgraph support.
 // type LangChainToolShim = {}
 
@@ -147,8 +149,53 @@ export type ClientSideTools<T extends AssistantUITools> = {
   };
 };
 
+// Define the shape of a tool with getUI
+type ToolWithUI = {
+  getUI: () => null;
+};
+
+// Define the shape of a tool that takes a user-defined function
+type ToolWithUserFunction<A extends ToolType> = {
+  execute: <
+    P extends (
+      args: inferParameters<
+        A["parameters"] extends z.ZodTypeAny ? A["parameters"] : z.ZodNever
+      >,
+    ) => unknown,
+  >(
+    userFn: P,
+  ) => {
+    getUI: () => (args: { result: ReturnType<P> }) => React.ReactNode;
+  };
+};
+
+// Type for the processed tools
+type ProcessedTools<T extends AssistantUITools> = {
+  [K in keyof T]: T[K]["execute"] extends undefined
+    ? ToolWithUserFunction<T[K]>
+    : ToolWithUI;
+};
+
 export function assistantUIToolbox<T extends AssistantUITools>(
   args: ClientSideTools<T>,
-) {
-  return args;
+): ProcessedTools<T> {
+  const processedTools = Object.entries(args).reduce((acc, [key, tool]) => {
+    const t = tool as ToolType;
+    if ("execute" in t) {
+      acc[key as keyof T] = {
+        getUI: () => null,
+      } as ProcessedTools<T>[keyof T];
+    } else {
+      acc[key as keyof T] = {
+        execute: (userFn) => ({
+          getUI: () => (args: ReturnType<typeof userFn>) => (
+            <>{JSON.stringify(args)}</>
+          ),
+        }),
+      } as ProcessedTools<T>[keyof T];
+    }
+    return acc;
+  }, {} as ProcessedTools<T>);
+
+  return processedTools;
 }

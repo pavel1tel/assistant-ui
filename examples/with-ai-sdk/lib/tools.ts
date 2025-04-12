@@ -57,6 +57,8 @@ const toolboxs = assistantUIToolbox<Tools>({
     execute: async (arg) => arg,
   },
 });
+toolboxs.weather.getUI();
+const Test = toolboxs.getLocationFromUser.execute((args) => args).getUI();
 
 // optional helper functions if you have mixed tool calls?
 
