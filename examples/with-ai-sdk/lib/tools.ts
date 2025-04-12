@@ -42,7 +42,7 @@ const aiSDKTools = {
   getLocationFromUser: tool({
     description:
       "Asks the user for their location if the user does provide one.",
-    parameters: z.string(),
+    parameters: z.number(),
   }),
 } satisfies AssistantUITools;
 
@@ -56,11 +56,13 @@ export type Tools = typeof aiSDKTools;
 
 const toolboxs = assistantUIToolbox<Tools>({
   getLocationFromUser: {
-    execute: async (arg) => arg,
+    execute: async (args) => args,
   },
 });
 const Ah = toolboxs.weather.getUI();
-const Test = toolboxs.getLocationFromUser.execute(async (args) => args).getUI();
+const Test = toolboxs.getLocationFromUser
+  .execute(async (args) => String(args))
+  .getUI();
 
 // optional helper functions if you have mixed tool calls?
 

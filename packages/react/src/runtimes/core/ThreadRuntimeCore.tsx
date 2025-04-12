@@ -130,6 +130,7 @@ type VercelToolShim =
       description?: string;
       parameters?: z.ZodTypeAny;
       // MARK: Does the following two parameters need to be improved?
+      // execute?: undefined;
       execute?: unknown;
       experimental_toToolResultContent?: unknown;
     };
@@ -248,14 +249,33 @@ declare function tool<PARAMETERS extends ToolParameters, RESULT>(
   execute: undefined;
 };
 
-export type AssistantUITools = Record<string, Tool<z.ZodTypeAny, unknown>>;
+export type AssistantUITools = Record<string, VercelToolShim>;
 
 type ToolParameters = z.ZodTypeAny;
 type inferParameters<PARAMETERS extends ToolParameters> =
   PARAMETERS extends z.ZodTypeAny ? z.infer<PARAMETERS> : never;
 
+// export type ClientSideTools<T extends AssistantUITools> = {
+//   // [K in keyof T as T[K]["execute"] extends undefined ? K : never]: T[K];
+//   // [K in keyof T]: T[K]["execute"] extends undefined ? T[K] : never;
+//   // [K in keyof T as T[K]["execute"] extends undefined ? K : never]: T[K] & {
+//   //   execute: (
+//   //     args: inferParameters<
+//   //       T[K]["parameters"] extends z.ZodTypeAny
+//   //         ? T[K]["parameters"]
+//   //         : z.ZodNever
+//   //     >,
+//   //   ) => PromiseLike<unknown>;
+//   // };
+//   [K in keyof T]: T[K]["execute"] extends undefined
+//     ? T[K] & {
+//         execute: "hi!";
+//       }
+//     : T[K];
+// };
+
 export type ClientSideTools<T extends AssistantUITools> = {
-  [K in keyof T as T[K] extends undefined ? K : never]: T[K];
+  // [K in keyof T as T[K] extends undefined ? K : never]: T[K];
   // {
   //   execute: (
   //     args: inferParameters<
@@ -265,10 +285,23 @@ export type ClientSideTools<T extends AssistantUITools> = {
   //     >,
   //   ) => PromiseLike<unknown>;
   // };
+  [K in keyof T as T[K]["execute"] extends undefined
+    ? K
+    : never]: T[K]["execute"] extends undefined
+    ? {
+        execute: (
+          args: inferParameters<
+            T[K]["parameters"] extends z.ZodTypeAny
+              ? T[K]["parameters"]
+              : z.ZodTypeAny
+          >,
+        ) => PromiseLike<unknown>;
+      }
+    : never;
 };
 
 // Define the shape of a tool with getUI
-type ToolWithUI<P extends (...args: any) => any | undefined> = {
+type ToolWithUI<P> = {
   // getUI: () => null;
   getUI: () => (args: { result: ReturnType<P> }) => React.ReactNode;
 };
@@ -299,13 +332,9 @@ export function assistantUIToolbox<T extends AssistantUITools>(
   args: ClientSideTools<T>,
 ): ProcessedTools<T> {
   const processedTools = Object.entries(args).reduce((acc, [key, tool]) => {
-    const t = tool as ToolType;
-    if ("execute" in t) {
-      const executeFn = tool["execute"];
+    if ("execute" in tool) {
       acc[key as keyof T] = {
-        getUI: () => (args: ReturnType<typeof executeFn>) => (
-          <>{JSON.stringify(args)}</>
-        ),
+        getUI: () => (args: any) => <>{JSON.stringify(args)}</>,
       } as ProcessedTools<T>[keyof T];
     } else {
       acc[key as keyof T] = {
