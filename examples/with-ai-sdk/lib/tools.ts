@@ -46,6 +46,8 @@ const aiSDKTools = {
   }),
 } satisfies AssistantUITools;
 
+type test = ReturnType<(typeof aiSDKTools)["weather"]["execute"]>;
+
 type ClientSide = ClientSideTools<typeof aiSDKTools>;
 
 // const obj ClientSide
@@ -57,8 +59,8 @@ const toolboxs = assistantUIToolbox<Tools>({
     execute: async (arg) => arg,
   },
 });
-toolboxs.weather.getUI();
-const Test = toolboxs.getLocationFromUser.execute((args) => args).getUI();
+const Ah = toolboxs.weather.getUI();
+const Test = toolboxs.getLocationFromUser.execute(async (args) => args).getUI();
 
 // optional helper functions if you have mixed tool calls?
 
