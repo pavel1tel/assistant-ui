@@ -131,7 +131,7 @@ type VercelToolShim =
       parameters?: z.ZodTypeAny;
       // MARK: Does the following two parameters need to be improved?
       // execute?: undefined;
-      execute?: unknown;
+      execute?: undefined;
       experimental_toToolResultContent?: unknown;
     };
 
@@ -301,7 +301,7 @@ export type ClientSideTools<T extends AssistantUITools> = {
 };
 
 // Define the shape of a tool with getUI
-type ToolWithUI<P> = {
+type ToolWithUI<P extends (...args: any) => any> = {
   // getUI: () => null;
   getUI: () => (args: { result: ReturnType<P> }) => React.ReactNode;
 };
@@ -325,14 +325,15 @@ type ToolWithUserFunction<A extends ToolType> = {
 type ProcessedTools<T extends AssistantUITools> = {
   [K in keyof T]: T[K]["execute"] extends undefined
     ? ToolWithUserFunction<T[K]>
-    : ToolWithUI<T[K]["execute"]>;
+    : ToolWithUI<NonNullable<T[K]["execute"]>>;
 };
 
 export function assistantUIToolbox<T extends AssistantUITools>(
   args: ClientSideTools<T>,
 ): ProcessedTools<T> {
   const processedTools = Object.entries(args).reduce((acc, [key, tool]) => {
-    if ("execute" in tool) {
+    const t = tool as ToolType;
+    if ("execute" in t) {
       acc[key as keyof T] = {
         getUI: () => (args: any) => <>{JSON.stringify(args)}</>,
       } as ProcessedTools<T>[keyof T];
