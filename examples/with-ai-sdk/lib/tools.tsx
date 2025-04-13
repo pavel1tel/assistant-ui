@@ -1,5 +1,6 @@
 import {
   assistantUIToolbox,
+  assistantUIToolbox2,
   AssistantUITools,
   ClientSideTools,
 } from "@assistant-ui/react/runtimes/core/ThreadRuntimeCore";
@@ -44,6 +45,11 @@ const aiSDKTools = {
       "Asks the user for their location if the user does provide one.",
     parameters: z.number(),
   }),
+  test: tool({
+    description:
+      "Asks the user for their location if the user does provide one.",
+    parameters: z.string(),
+  }),
 } satisfies AssistantUITools;
 
 type test = ReturnType<(typeof aiSDKTools)["weather"]["execute"]>;
@@ -79,3 +85,14 @@ const Test = toolboxs.getLocationFromUser.getUI({
  client side .execute means no addResult
  client side no .execute means addResult.
 */
+
+assistantUIToolbox2<Tools>({
+  getLocationFromUser: {
+    // execute: async (args) => "args",
+    execute: undefined,
+  },
+  test: {
+    // execute: async (args) => "args",
+    execute: undefined,
+  },
+});

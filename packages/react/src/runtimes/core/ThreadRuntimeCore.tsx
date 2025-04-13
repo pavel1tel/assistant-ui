@@ -380,3 +380,54 @@ export function assistantUIToolbox<
 
   return processedTools;
 }
+
+// type AUITBKeys<T> = keyof T;
+
+type SafeParameters<T> = T extends z.ZodTypeAny ? T : z.ZodNever;
+
+// type CSTools<T extends AssistantUITools> = {
+//   [K in keyof T]: T[K]["execute"] extends undefined
+//     ? // ? {
+//       //     execute: (
+//       //       args: inferParameters<SafeParameters<T[K]["parameters"]>>,
+//       //     ) => PromiseLike<unknown>;
+//       //   }
+//       true
+//     : // ? T[K]
+//       never;
+// };
+
+// type CSTools2<T extends CSTools<AssistantUITools>> = {
+//   [K in keyof T as T[K]["execute"] extends undefined ? K : never]: T[K];
+// };
+// Returns a new set of AssistantUITools with more or less executes
+
+type KeysWithNeed<T extends AssistantUITools> = {
+  [K in keyof T]: T[K]["execute"] extends undefined ? K : never;
+}[keyof T];
+
+type ClientSideToolInitialArgs<
+  T extends AssistantUITools,
+  Keys extends KeysWithNeed<T>,
+  SlimmedTools extends Pick<T, Keys>,
+> = {
+  [Key in keyof SlimmedTools]: {
+    execute: (
+      args: inferParameters<SafeParameters<SlimmedTools[Key]["parameters"]>>,
+    ) => PromiseLike<unknown>;
+  };
+};
+
+/*
+iterate through the tools, find the ones that don't have an execute function.
+give an option to add execute in args, if they do then return a new set of AssistantUITools.
+Then handle the logic inside the function. If an execute tool is there then user just defines 
+render when they do getUI({toolName: "test"}). The tool name does the picking for the rest.
+*/
+export function assistantUIToolbox2<T extends AssistantUITools>(
+  args: ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>,
+) {
+  return null;
+}
+
+// Use Pick for getting stuff out of AssistantUITools
