@@ -252,6 +252,7 @@ declare function tool<PARAMETERS extends ToolParameters, RESULT>(
 export type AssistantUITools = Record<string, VercelToolShim>;
 
 type ToolParameters = z.ZodTypeAny;
+export type PARAMETERS = z.ZodTypeAny;
 type inferParameters<PARAMETERS extends ToolParameters> =
   PARAMETERS extends z.ZodTypeAny ? z.infer<PARAMETERS> : never;
 
@@ -321,10 +322,41 @@ type ToolWithUserFunction<A extends ToolType> = {
   };
 };
 
+type GetUIARgs<P extends PARAMETERS, RESULT = any> = {
+  execute: (args: inferParameters<P>) => PromiseLike<RESULT>;
+  render: (args: { result: RESULT }) => React.ReactNode;
+};
+
+// Define the shape of a tool that takes a user-defined function
+type ToolWithUserFunction2 = {
+  // execute: <
+  //   P extends (
+  //     args: inferParameters<
+  //       A["parameters"] extends z.ZodTypeAny ? A["parameters"] : z.ZodNever
+  //     >,
+  //   ) => PromiseLike<unknown>,
+  // >(
+  //   userFn: P,
+  // ) => {
+  //   getUI: () => (args: { result: Awaited<ReturnType<P>> }) => React.ReactNode;
+  // };
+  // getUI: (args: {
+  //   execute: (
+  //     args: inferParameters<
+  //       A["parameters"] extends z.ZodTypeAny ? A["parameters"] : z.ZodNever
+  //     >,
+  //   ) => PromiseLike<RESULT>;
+  //   render: (args: { result: RESULT }) => React.ReactNode;
+  // }) => React.ReactNode;
+  getUI<TArgs extends PARAMETERS, RESULT = any>(
+    args: GetUIARgs<TArgs, RESULT>,
+  ): (args: { result: RESULT }) => React.ReactNode;
+};
+
 // Type for the processed tools
 type ProcessedTools<T extends AssistantUITools> = {
   [K in keyof T]: T[K]["execute"] extends undefined
-    ? ToolWithUserFunction<T[K]>
+    ? ToolWithUserFunction2
     : ToolWithUI<NonNullable<T[K]["execute"]>>;
 };
 
@@ -339,11 +371,19 @@ export function assistantUIToolbox<T extends AssistantUITools>(
       } as ProcessedTools<T>[keyof T];
     } else {
       acc[key as keyof T] = {
-        execute: (userFn) => ({
-          getUI: () => (args: ReturnType<typeof userFn>) => (
-            <>{JSON.stringify(args)}</>
-          ),
-        }),
+        //   execute: (userFn) => ({
+        //     getUI: () => (args: ReturnType<typeof userFn>) => (
+        //       <>{JSON.stringify(args)}</>
+        //     ),
+        //   }),
+        // } as ProcessedTools<T>[keyof T];
+
+        // getUI: (args) => <></>,
+        getUI<TArgs extends PARAMETERS, RESULT = any>(
+          args: GetUIARgs<TArgs, RESULT>,
+        ): (args: { result: RESULT }) => React.ReactNode {
+          return (args: { result: RESULT }) => <>{JSON.stringify(args)}</>;
+        },
       } as ProcessedTools<T>[keyof T];
     }
     return acc;

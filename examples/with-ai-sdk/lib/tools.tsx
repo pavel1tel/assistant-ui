@@ -59,10 +59,14 @@ const toolboxs = assistantUIToolbox<Tools>({
     execute: async (args) => args,
   },
 });
+// adjust getUI to generateUI with params to render.
 const Ah = toolboxs.weather.getUI();
-const Test = toolboxs.getLocationFromUser
-  .execute(async (args) => String(args))
-  .getUI();
+const Test = toolboxs.getLocationFromUser.getUI({
+  execute: async (args) => args as bigint,
+  render: (args) => <>{JSON.stringify(args.result)}</>,
+});
+// .execute(async (args) => String(args))
+// .getUI();
 
 // optional helper functions if you have mixed tool calls?
 
