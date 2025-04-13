@@ -509,10 +509,8 @@ type GetUIArgs<T extends AssistantUITools, ToolName extends keyof T> = {
 
 export function assistantUIToolbox2<
   T extends AssistantUITools,
-  Args = ClientSideToolInitialArgs<
-    T,
-    KeysWithNeed<T>,
-    Pick<T, KeysWithNeed<T>>
+  Args = Partial<
+    ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
   >,
 >(args: Args) {
   // return { getUI: getUI<T> };
@@ -528,13 +526,24 @@ export function assistantUIToolbox2<
   //   }
   // }
 
+  type ArgsKeysWithExecute<A> = {
+    [Key in keyof A]: A[Key] extends undefined ? never : A[Key];
+  }[keyof A];
+
+  type CorrectRender<Key, A> = Key extends keyof KeysWithoutNeed<T>
+    ? "keys without"
+    : Key extends keyof ArgsKeysWithExecute<A>
+      ? "args with"
+      : "neither";
+
   const getUI = <
-    ToolName extends keyof T,
+    ToolName extends KeysWithoutNeed<T> | keyof Args,
     // Execute,
     // Result,
     // >(test: ToolName): T[ToolName]["parameters"];
   >(args: {
     toolName: ToolName;
+    test: CorrectRender<ToolName, typeof args>;
     render: (args: {
       result: T[ToolName]["execute"] extends (...args: any) => PromiseLike<any>
         ? Awaited<ReturnType<T[ToolName]["execute"]>>

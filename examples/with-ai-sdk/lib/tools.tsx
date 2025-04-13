@@ -118,5 +118,6 @@ const t = assistantUIToolbox2<Tools>({
 
 const a = t.getUI({
   toolName: "test",
+  test: true,
   render: (args) => <>{JSON.stringify(args)}</>,
 });
