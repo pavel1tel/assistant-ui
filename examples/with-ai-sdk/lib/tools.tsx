@@ -56,7 +56,7 @@ export type Tools = typeof aiSDKTools;
 
 const toolboxs = assistantUIToolbox<Tools>({
   getLocationFromUser: {
-    execute: async (args) => args,
+    execute: async (args) => "args",
   },
 });
 // adjust getUI to generateUI with params to render.

@@ -218,13 +218,7 @@ The arguments for configuring the tool. Must match the expected arguments define
       args: Record<string, unknown>;
     }
 );
-/**
- * @deprecated Use `Tool` instead.
- */
-type CoreTool<PARAMETERS extends ToolParameters = any, RESULT = any> = Tool<
-  PARAMETERS,
-  RESULT
->;
+
 /**
 Helper function for inferring the execute args of a tool.
  */
@@ -256,36 +250,7 @@ export type PARAMETERS = z.ZodTypeAny;
 type inferParameters<PARAMETERS extends ToolParameters> =
   PARAMETERS extends z.ZodTypeAny ? z.infer<PARAMETERS> : never;
 
-// export type ClientSideTools<T extends AssistantUITools> = {
-//   // [K in keyof T as T[K]["execute"] extends undefined ? K : never]: T[K];
-//   // [K in keyof T]: T[K]["execute"] extends undefined ? T[K] : never;
-//   // [K in keyof T as T[K]["execute"] extends undefined ? K : never]: T[K] & {
-//   //   execute: (
-//   //     args: inferParameters<
-//   //       T[K]["parameters"] extends z.ZodTypeAny
-//   //         ? T[K]["parameters"]
-//   //         : z.ZodNever
-//   //     >,
-//   //   ) => PromiseLike<unknown>;
-//   // };
-//   [K in keyof T]: T[K]["execute"] extends undefined
-//     ? T[K] & {
-//         execute: "hi!";
-//       }
-//     : T[K];
-// };
-
 export type ClientSideTools<T extends AssistantUITools> = {
-  // [K in keyof T as T[K] extends undefined ? K : never]: T[K];
-  // {
-  //   execute: (
-  //     args: inferParameters<
-  //       T[K]["parameters"] extends z.ZodTypeAny
-  //         ? T[K]["parameters"]
-  //         : z.ZodNever
-  //     >,
-  //   ) => PromiseLike<unknown>;
-  // };
   [K in keyof T as T[K]["execute"] extends undefined
     ? K
     : never]: T[K]["execute"] extends undefined
@@ -303,23 +268,7 @@ export type ClientSideTools<T extends AssistantUITools> = {
 
 // Define the shape of a tool with getUI
 type ToolWithUI<P extends (...args: any) => any> = {
-  // getUI: () => null;
   getUI: () => (args: { result: ReturnType<P> }) => React.ReactNode;
-};
-
-// Define the shape of a tool that takes a user-defined function
-type ToolWithUserFunction<A extends ToolType> = {
-  execute: <
-    P extends (
-      args: inferParameters<
-        A["parameters"] extends z.ZodTypeAny ? A["parameters"] : z.ZodNever
-      >,
-    ) => PromiseLike<unknown>,
-  >(
-    userFn: P,
-  ) => {
-    getUI: () => (args: { result: Awaited<ReturnType<P>> }) => React.ReactNode;
-  };
 };
 
 type GetUIARgs<P extends PARAMETERS, RESULT = any> = {
@@ -328,26 +277,7 @@ type GetUIARgs<P extends PARAMETERS, RESULT = any> = {
 };
 
 // Define the shape of a tool that takes a user-defined function
-type ToolWithUserFunction2<P extends PARAMETERS> = {
-  // execute: <
-  //   P extends (
-  //     args: inferParameters<
-  //       A["parameters"] extends z.ZodTypeAny ? A["parameters"] : z.ZodNever
-  //     >,
-  //   ) => PromiseLike<unknown>,
-  // >(
-  //   userFn: P,
-  // ) => {
-  //   getUI: () => (args: { result: Awaited<ReturnType<P>> }) => React.ReactNode;
-  // };
-  // getUI: (args: {
-  //   execute: (
-  //     args: inferParameters<
-  //       A["parameters"] extends z.ZodTypeAny ? A["parameters"] : z.ZodNever
-  //     >,
-  //   ) => PromiseLike<RESULT>;
-  //   render: (args: { result: RESULT }) => React.ReactNode;
-  // }) => React.ReactNode;
+type ToolWithUserFunction<P extends PARAMETERS> = {
   getUI<RESULT = any>(
     args: GetUIARgs<P, RESULT>,
   ): (args: { result: RESULT }) => React.ReactNode;
@@ -356,7 +286,7 @@ type ToolWithUserFunction2<P extends PARAMETERS> = {
 // Type for the processed tools
 type ProcessedTools<T extends AssistantUITools> = {
   [K in keyof T]: T[K]["execute"] extends undefined
-    ? ToolWithUserFunction2<
+    ? ToolWithUserFunction<
         T[K]["parameters"] extends z.ZodTypeAny
           ? T[K]["parameters"]
           : z.ZodNever
@@ -364,9 +294,10 @@ type ProcessedTools<T extends AssistantUITools> = {
     : ToolWithUI<NonNullable<T[K]["execute"]>>;
 };
 
-export function assistantUIToolbox<T extends AssistantUITools>(
-  args: ClientSideTools<T>,
-): ProcessedTools<T> {
+export function assistantUIToolbox<
+  T extends AssistantUITools,
+  C extends ClientSideTools<T>,
+>(args: C): ProcessedTools<T> {
   const processedTools = Object.entries(args).reduce((acc, [key, tool]) => {
     const t = tool as ToolType;
     if ("execute" in t) {
@@ -380,7 +311,7 @@ export function assistantUIToolbox<T extends AssistantUITools>(
         ): (args: { result: RESULT }) => React.ReactNode {
           return args.render;
         },
-      } as ProcessedTools<T>[keyof T];
+      } as ProcessedTools<C>[keyof C];
     }
     return acc;
   }, {} as ProcessedTools<T>);
