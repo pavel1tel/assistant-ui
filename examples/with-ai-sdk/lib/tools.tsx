@@ -62,7 +62,7 @@ const toolboxs = assistantUIToolbox<Tools>({
 // adjust getUI to generateUI with params to render.
 const Ah = toolboxs.weather.getUI();
 const Test = toolboxs.getLocationFromUser.getUI({
-  execute: async (args) => args as bigint,
+  execute: async (args) => String(args),
   render: (args) => <>{JSON.stringify(args.result)}</>,
 });
 // .execute(async (args) => String(args))

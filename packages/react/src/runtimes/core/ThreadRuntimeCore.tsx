@@ -328,7 +328,7 @@ type GetUIARgs<P extends PARAMETERS, RESULT = any> = {
 };
 
 // Define the shape of a tool that takes a user-defined function
-type ToolWithUserFunction2 = {
+type ToolWithUserFunction2<P extends PARAMETERS> = {
   // execute: <
   //   P extends (
   //     args: inferParameters<
@@ -348,15 +348,19 @@ type ToolWithUserFunction2 = {
   //   ) => PromiseLike<RESULT>;
   //   render: (args: { result: RESULT }) => React.ReactNode;
   // }) => React.ReactNode;
-  getUI<TArgs extends PARAMETERS, RESULT = any>(
-    args: GetUIARgs<TArgs, RESULT>,
+  getUI<RESULT = any>(
+    args: GetUIARgs<P, RESULT>,
   ): (args: { result: RESULT }) => React.ReactNode;
 };
 
 // Type for the processed tools
 type ProcessedTools<T extends AssistantUITools> = {
   [K in keyof T]: T[K]["execute"] extends undefined
-    ? ToolWithUserFunction2
+    ? ToolWithUserFunction2<
+        T[K]["parameters"] extends z.ZodTypeAny
+          ? T[K]["parameters"]
+          : z.ZodNever
+      >
     : ToolWithUI<NonNullable<T[K]["execute"]>>;
 };
 
@@ -371,18 +375,10 @@ export function assistantUIToolbox<T extends AssistantUITools>(
       } as ProcessedTools<T>[keyof T];
     } else {
       acc[key as keyof T] = {
-        //   execute: (userFn) => ({
-        //     getUI: () => (args: ReturnType<typeof userFn>) => (
-        //       <>{JSON.stringify(args)}</>
-        //     ),
-        //   }),
-        // } as ProcessedTools<T>[keyof T];
-
-        // getUI: (args) => <></>,
         getUI<TArgs extends PARAMETERS, RESULT = any>(
           args: GetUIARgs<TArgs, RESULT>,
         ): (args: { result: RESULT }) => React.ReactNode {
-          return (args: { result: RESULT }) => <>{JSON.stringify(args)}</>;
+          return args.render;
         },
       } as ProcessedTools<T>[keyof T];
     }
