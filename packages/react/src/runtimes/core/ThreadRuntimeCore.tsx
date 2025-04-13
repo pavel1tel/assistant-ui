@@ -531,9 +531,9 @@ export function assistantUIToolbox2<
   }[keyof A];
 
   type CorrectRender<Key, A> = Key extends keyof KeysWithoutNeed<T>
-    ? "keys without"
+    ? "execute on initial"
     : Key extends keyof ArgsKeysWithExecute<A>
-      ? "args with"
+      ? "execute on args"
       : "neither";
 
   const getUI = <
