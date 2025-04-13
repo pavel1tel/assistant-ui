@@ -60,19 +60,19 @@ type ClientSide = ClientSideTools<typeof aiSDKTools>;
 
 export type Tools = typeof aiSDKTools;
 
-const toolboxs = assistantUIToolbox<Tools>({
-  getLocationFromUser: {
-    execute: async (args) => "args",
-  },
-});
-// adjust getUI to generateUI with params to render.
-const Ah = toolboxs.weather.getUI({
-  render: (args) => <>{JSON.stringify(args.result)}</>,
-});
-const Test = toolboxs.getLocationFromUser.getUI({
-  // execute: async (args) => String(args),
-  render: (args) => <>{JSON.stringify(args.result)}</>,
-});
+// const toolboxs = assistantUIToolbox<Tools>({
+//   getLocationFromUser: {
+//     execute: async (args) => "args",
+//   },
+// });
+// // adjust getUI to generateUI with params to render.
+// const Ah = toolboxs.weather.getUI({
+//   render: (args) => <>{JSON.stringify(args.result)}</>,
+// });
+// const Test = toolboxs.getLocationFromUser.getUI({
+//   // execute: async (args) => String(args),
+//   render: (args) => <>{JSON.stringify(args.result)}</>,
+// });
 // .execute(async (args) => String(args))
 // .getUI();
 
@@ -88,11 +88,9 @@ const Test = toolboxs.getLocationFromUser.getUI({
 
 assistantUIToolbox2<Tools>({
   getLocationFromUser: {
-    // execute: async (args) => "args",
-    execute: undefined,
+    execute: async (args) => `args + ${args}`,
   },
   test: {
-    // execute: async (args) => "args",
-    execute: undefined,
+    execute: async (args) => `args + ${args}`,
   },
 });

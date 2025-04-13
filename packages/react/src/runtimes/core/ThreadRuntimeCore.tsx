@@ -412,7 +412,7 @@ type ClientSideToolInitialArgs<
   SlimmedTools extends Pick<T, Keys>,
 > = {
   [Key in keyof SlimmedTools]: {
-    execute: (
+    execute?: (
       args: inferParameters<SafeParameters<SlimmedTools[Key]["parameters"]>>,
     ) => PromiseLike<unknown>;
   };
@@ -424,9 +424,14 @@ give an option to add execute in args, if they do then return a new set of Assis
 Then handle the logic inside the function. If an execute tool is there then user just defines 
 render when they do getUI({toolName: "test"}). The tool name does the picking for the rest.
 */
-export function assistantUIToolbox2<T extends AssistantUITools>(
-  args: ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>,
-) {
+export function assistantUIToolbox2<
+  T extends AssistantUITools,
+  Args = ClientSideToolInitialArgs<
+    T,
+    KeysWithNeed<T>,
+    Pick<T, KeysWithNeed<T>>
+  >,
+>(args: Args) {
   return null;
 }
 
