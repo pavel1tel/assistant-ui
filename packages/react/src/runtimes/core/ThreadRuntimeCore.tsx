@@ -424,6 +424,27 @@ give an option to add execute in args, if they do then return a new set of Assis
 Then handle the logic inside the function. If an execute tool is there then user just defines 
 render when they do getUI({toolName: "test"}). The tool name does the picking for the rest.
 */
+
+type GetUIArgs<
+  T extends AssistantUITools,
+  Key extends keyof T = string,
+  Execute = T[Key]["execute"],
+  Result = unknown,
+> = {
+  toolName: Key;
+} & (Execute extends (...args: any) => PromiseLike<unknown>
+  ? {
+      render: (args: {
+        result: Awaited<ReturnType<Execute>>;
+      }) => React.ReactNode;
+    }
+  : {
+      execute: (
+        args: inferParameters<SafeParameters<T[Key]["parameters"]>>,
+      ) => PromiseLike<Result>;
+      render: (args: { result: Result }) => React.ReactNode;
+    });
+
 export function assistantUIToolbox2<
   T extends AssistantUITools,
   Args = ClientSideToolInitialArgs<
@@ -432,7 +453,13 @@ export function assistantUIToolbox2<
     Pick<T, KeysWithNeed<T>>
   >,
 >(args: Args) {
-  return null;
+  return {
+    getUI: (args): GetUIArgs<T> => ({
+      toolName: args.toolName,
+      ...(args.execute && { execute: args.execute }),
+      ...(args.render && { render: args.render }),
+    }),
+  };
 }
 
 // Use Pick for getting stuff out of AssistantUITools
