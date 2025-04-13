@@ -266,6 +266,26 @@ export type ClientSideTools<T extends AssistantUITools> = {
     : never;
 };
 
+export type ToolChecker<
+  AUI extends AssistantUITools,
+  C extends ClientSideTools<AUI>,
+> = {
+  // [K in keyof T as T[K]["execute"] extends undefined
+  //   ? K
+  //   : never]: T[K]["execute"] extends undefined
+  //   ? {
+  //       execute: (
+  //         args: inferParameters<
+  //           T[K]["parameters"] extends z.ZodTypeAny
+  //             ? T[K]["parameters"]
+  //             : z.ZodTypeAny
+  //         >,
+  //       ) => PromiseLike<unknown>;
+  //     }
+  //   : never;
+  [K in keyof C]: C[K]["execute"] extends undefined ? K : never;
+};
+
 // Define the shape of a tool with getUI
 type ToolWithUI<RESULT> = {
   // getUI: () => (args: { result: ReturnType<P> }) => React.ReactNode;
@@ -290,44 +310,73 @@ type ToolWithUserFunction<P extends PARAMETERS> = {
   ): (args: { result: RESULT }) => React.ReactNode;
 };
 
-// Type for the processed tools
-type ProcessedTools<T extends AssistantUITools> = {
+// // Type for the processed tools
+// type ProcessedTools<
+//   T extends AssistantUITools,
+//   C extends ClientSideTools<T>,
+// > = {
+//   [K in keyof T]: T[K]["execute"] extends undefined
+//     ? ToolChecker<T, C>[K] extends undefined
+//       ? ToolWithUserFunction<
+//           T[K]["parameters"] extends z.ZodTypeAny
+//             ? T[K]["parameters"]
+//             : z.ZodNever
+//         >
+//       : string
+//     : ToolWithUI<Awaited<ReturnType<NonNullable<T[K]["execute"]>>>>;
+// };
+
+type ProcessedTools<
+  T extends AssistantUITools,
+  C extends ClientSideTools<T>,
+> = {
   [K in keyof T]: T[K]["execute"] extends undefined
-    ? ToolWithUserFunction<
-        T[K]["parameters"] extends z.ZodTypeAny
-          ? T[K]["parameters"]
-          : z.ZodNever
-      >
-    : ToolWithUI<ReturnType<NonNullable<T[K]["execute"]>>>;
+    ? K extends keyof C
+      ? C[K]["execute"] extends undefined
+        ? ToolWithUserFunction<
+            T[K]["parameters"] extends z.ZodTypeAny
+              ? T[K]["parameters"]
+              : z.ZodString
+          >
+        : ToolWithUI<Awaited<ReturnType<NonNullable<T[K]["execute"]>>>>
+      : ToolWithUserFunction<
+          T[K]["parameters"] extends z.ZodTypeAny
+            ? T[K]["parameters"]
+            : z.ZodString
+        >
+    : ToolWithUI<Awaited<ReturnType<NonNullable<T[K]["execute"]>>>>;
 };
 
 export function assistantUIToolbox<
   T extends AssistantUITools,
   C extends ClientSideTools<T> = ClientSideTools<T>,
->(args: C): ProcessedTools<T> {
-  const processedTools = Object.entries(args).reduce((acc, [key, tool]) => {
-    const t = tool as ToolType;
-    if ("execute" in t) {
-      acc[key as keyof T] = {
-        getUI<TArgs extends PARAMETERS, RESULT = any>(
-          args: GetUIARgs<TArgs, RESULT>,
-        ): (args: { result: RESULT }) => React.ReactNode {
-          return args.render;
-        },
-      } as ProcessedTools<C>[keyof C];
-      //   // getUI: () => (args: any) => <>{JSON.stringify(args)}</>,
-      // } as ProcessedTools<T>[keyof T];
-    } else {
-      acc[key as keyof T] = {
-        getUI<TArgs extends PARAMETERS, RESULT = any>(
-          args: GetUIARgs<TArgs, RESULT>,
-        ): (args: { result: RESULT }) => React.ReactNode {
-          return args.render;
-        },
-      } as ProcessedTools<C>[keyof C];
-    }
-    return acc;
-  }, {} as ProcessedTools<T>);
+>(args: C | undefined) {
+  const processedTools = Object.entries(args || {}).reduce(
+    (acc, [key, tool]) => {
+      const t = tool as ToolType;
+      if ("execute" in t) {
+        acc[key as keyof T] = {
+          getUI<RESULT = string>(
+            args: GetUIARgs2<RESULT>,
+          ): (args: { result: RESULT }) => React.ReactNode {
+            return args.render;
+          },
+          // };
+          //   // getUI: () => (args: any) => <>{JSON.stringify(args)}</>,
+        } as ProcessedTools<T, C>[keyof T];
+      } else {
+        acc[key as keyof T] = {
+          getUI<TArgs extends PARAMETERS, RESULT = any>(
+            args: GetUIARgs<TArgs, RESULT>,
+          ): (args: { result: RESULT }) => React.ReactNode {
+            return args.render;
+          },
+        } as ProcessedTools<T, C>[keyof T];
+      }
+      return acc;
+    },
+    {} as ProcessedTools<T, C>,
+  );
 
   return processedTools;
 }

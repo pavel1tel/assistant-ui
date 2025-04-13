@@ -64,7 +64,7 @@ const Ah = toolboxs.weather.getUI({
   render: (args) => <>{JSON.stringify(args.result)}</>,
 });
 const Test = toolboxs.getLocationFromUser.getUI({
-  execute: async (args) => String(args),
+  // execute: async (args) => String(args),
   render: (args) => <>{JSON.stringify(args.result)}</>,
 });
 // .execute(async (args) => String(args))
