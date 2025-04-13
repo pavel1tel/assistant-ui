@@ -406,6 +406,10 @@ type KeysWithNeed<T extends AssistantUITools> = {
   [K in keyof T]: T[K]["execute"] extends undefined ? K : never;
 }[keyof T];
 
+type KeysWithoutNeed<T extends AssistantUITools> = {
+  [K in keyof T]: T[K]["execute"] extends undefined ? never : K;
+}[keyof T];
+
 type ClientSideToolInitialArgs<
   T extends AssistantUITools,
   Keys extends KeysWithNeed<T>,
@@ -425,25 +429,83 @@ Then handle the logic inside the function. If an execute tool is there then user
 render when they do getUI({toolName: "test"}). The tool name does the picking for the rest.
 */
 
-type GetUIArgs<
-  T extends AssistantUITools,
-  Key extends keyof T = string,
-  Execute = T[Key]["execute"],
-  Result = unknown,
-> = {
+// type GetUIArgs<
+//   T extends AssistantUITools,
+//   Key extends keyof T = string,
+//   Execute = T[Key]["execute"],
+//   Result = unknown,
+// > = {
+//   toolName: Key;
+// } & (Execute extends (...args: any) => PromiseLike<unknown>
+//   ? {
+//       render: (args: {
+//         result: Awaited<ReturnType<Execute>>;
+//       }) => React.ReactNode;
+//     }
+//   : {
+//       execute: (
+//         args: inferParameters<SafeParameters<T[Key]["parameters"]>>,
+//       ) => PromiseLike<Result>;
+//       render: (args: { result: Result }) => React.ReactNode;
+//     });
+
+type InitialArgs<T extends AssistantUITools, Key extends keyof T> = {
   toolName: Key;
-} & (Execute extends (...args: any) => PromiseLike<unknown>
-  ? {
-      render: (args: {
-        result: Awaited<ReturnType<Execute>>;
-      }) => React.ReactNode;
-    }
-  : {
-      execute: (
-        args: inferParameters<SafeParameters<T[Key]["parameters"]>>,
-      ) => PromiseLike<Result>;
-      render: (args: { result: Result }) => React.ReactNode;
-    });
+};
+
+// declare function getUI<
+//   T extends AssistantUITools,
+//   Key extends keyof T = string,
+// >(args: InitialArgs<T, Key>): React.ReactNode;
+
+// force to string
+// type Stringify<T extends AssistantUITools> = {
+//   [K in keyof T as string]: T[K];
+// };
+
+type BaseArgs<Key> = {
+  toolName: Key;
+  execute: (...args: any) => PromiseLike<unknown>;
+};
+
+declare function prepGetUI<
+  T extends AssistantUITools,
+  Key extends keyof T = keyof T,
+  Tool extends T[Key] = T[Key],
+>(
+  args: BaseArgs<Key>,
+): {
+  toolName: Key;
+  // execute: Tool["execute"];
+};
+
+// do not erase below line
+
+// type GetUI<
+//   T extends AssistantUITools,
+//   Key extends keyof T = keyof T,
+//   // StringKey extends string = Key extends string ? Key : never,
+// > = (
+//   args: BaseArgs<Key> & {
+//     execute: T[Key]["execute"];
+//   },
+// ) => React.ReactNode;
+
+type GetParameters<
+  T extends AssistantUITools,
+  Key extends keyof T,
+> = T[Key]["parameters"];
+
+type GetExecute<
+  T extends AssistantUITools,
+  Key extends keyof T,
+> = T[Key]["execute"];
+
+type GetUIArgs<T extends AssistantUITools, ToolName extends keyof T> = {
+  toolName: ToolName;
+} & {
+  parameters: GetParameters<T, ToolName>;
+};
 
 export function assistantUIToolbox2<
   T extends AssistantUITools,
@@ -453,13 +515,69 @@ export function assistantUIToolbox2<
     Pick<T, KeysWithNeed<T>>
   >,
 >(args: Args) {
-  return {
-    getUI: (args): GetUIArgs<T> => ({
-      toolName: args.toolName,
-      ...(args.execute && { execute: args.execute }),
-      ...(args.render && { render: args.render }),
-    }),
+  // return { getUI: getUI<T> };
+  // const getUI = ({
+  //   toolName
+  // }: {
+  //   toolName: string;
+  // }) => {
+  //   if (args[toolName].execute) {
+  //     return args[toolName].getUI({
+  //       toolName,
+  //     });
+  //   }
+  // }
+
+  const getUI = <
+    ToolName extends keyof T,
+    // Execute,
+    // Result,
+    // >(test: ToolName): T[ToolName]["parameters"];
+  >(args: {
+    toolName: ToolName;
+    render: (args: {
+      result: T[ToolName]["execute"] extends (...args: any) => PromiseLike<any>
+        ? Awaited<ReturnType<T[ToolName]["execute"]>>
+        : never;
+    }) => React.ReactNode;
+  }) => {
+    return args.render;
   };
+  const getUI2 = <
+    ToolName extends keyof T,
+    // Execute,
+    // Result,
+    // >(test: ToolName): T[ToolName]["parameters"];
+  >(args: {
+    toolName: ToolName;
+    render: (args: {
+      result: T[ToolName]["execute"] extends (...args: any) => PromiseLike<any>
+        ? Awaited<ReturnType<T[ToolName]["execute"]>>
+        : never;
+    }) => React.ReactNode;
+  }) => {
+    return args.render;
+  };
+
+  return { getUI: getUI };
 }
 
 // Use Pick for getting stuff out of AssistantUITools
+
+// type Fruit = {
+//   apple: "red" | "green";
+//   banana: "yellow" | "brown";
+// };
+
+// function fruitSweetness<T extends keyof Fruit>(args: {
+//   fruit: T;
+//   color: Fruit[T];
+// }) {
+//   // Implementation goes here
+//   console.log(`The ${args.fruit} is ${args.color} and is sweet!`);
+// }
+
+// fruitSweetness({
+//   fruit: "apple",
+//   color: "red",
+// });

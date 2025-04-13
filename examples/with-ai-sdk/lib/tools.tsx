@@ -43,16 +43,19 @@ const aiSDKTools = {
   getLocationFromUser: tool({
     description:
       "Asks the user for their location if the user does provide one.",
-    parameters: z.number(),
+    parameters: z.array(z.string()),
   }),
   test: tool({
     description:
       "Asks the user for their location if the user does provide one.",
-    parameters: z.string(),
+    parameters: z.object({
+      ahhh: z.string(),
+    }),
+    // execute: async (args) => `args + ${args}`,
   }),
 } satisfies AssistantUITools;
 
-type test = ReturnType<(typeof aiSDKTools)["weather"]["execute"]>;
+// type test = ReturnType<(typeof aiSDKTools)["weather"]["execute"]>;
 
 type ClientSide = ClientSideTools<typeof aiSDKTools>;
 
@@ -86,11 +89,34 @@ export type Tools = typeof aiSDKTools;
  client side no .execute means addResult.
 */
 
-assistantUIToolbox2<Tools>({
+const t = assistantUIToolbox2<Tools>({
   getLocationFromUser: {
     execute: async (args) => `args + ${args}`,
   },
   test: {
     execute: async (args) => `args + ${args}`,
   },
+});
+
+// const ta = t.getUI({
+//   toolName: "test" as const,
+//   execute: async (args) => `args + ${args}`,
+//   // execute: async (args) => `args + ${args}`,
+//   // toolName: "weather" as const,
+//   // execute: async (args) => `args + ${args}`,
+// });
+
+// // ta.test.
+
+// t.getUI({
+//   toolName: "test",
+//   parameters: z.string(),
+//   // parameters: {
+//   //   ahhh: "test",
+//   // },
+// });
+
+const a = t.getUI({
+  toolName: "test",
+  render: (args) => <>{JSON.stringify(args)}</>,
 });
