@@ -267,8 +267,15 @@ export type ClientSideTools<T extends AssistantUITools> = {
 };
 
 // Define the shape of a tool with getUI
-type ToolWithUI<P extends (...args: any) => any> = {
-  getUI: () => (args: { result: ReturnType<P> }) => React.ReactNode;
+type ToolWithUI<RESULT> = {
+  // getUI: () => (args: { result: ReturnType<P> }) => React.ReactNode;
+  getUI: (
+    args: GetUIARgs2<RESULT>,
+  ) => (args: { result: RESULT }) => React.ReactNode;
+};
+
+type GetUIARgs2<RESULT> = {
+  render: (args: { result: RESULT }) => React.ReactNode;
 };
 
 type GetUIARgs<P extends PARAMETERS, RESULT = any> = {
@@ -291,19 +298,25 @@ type ProcessedTools<T extends AssistantUITools> = {
           ? T[K]["parameters"]
           : z.ZodNever
       >
-    : ToolWithUI<NonNullable<T[K]["execute"]>>;
+    : ToolWithUI<ReturnType<NonNullable<T[K]["execute"]>>>;
 };
 
 export function assistantUIToolbox<
   T extends AssistantUITools,
-  C extends ClientSideTools<T>,
+  C extends ClientSideTools<T> = ClientSideTools<T>,
 >(args: C): ProcessedTools<T> {
   const processedTools = Object.entries(args).reduce((acc, [key, tool]) => {
     const t = tool as ToolType;
     if ("execute" in t) {
       acc[key as keyof T] = {
-        getUI: () => (args: any) => <>{JSON.stringify(args)}</>,
-      } as ProcessedTools<T>[keyof T];
+        getUI<TArgs extends PARAMETERS, RESULT = any>(
+          args: GetUIARgs<TArgs, RESULT>,
+        ): (args: { result: RESULT }) => React.ReactNode {
+          return args.render;
+        },
+      } as ProcessedTools<C>[keyof C];
+      //   // getUI: () => (args: any) => <>{JSON.stringify(args)}</>,
+      // } as ProcessedTools<T>[keyof T];
     } else {
       acc[key as keyof T] = {
         getUI<TArgs extends PARAMETERS, RESULT = any>(
