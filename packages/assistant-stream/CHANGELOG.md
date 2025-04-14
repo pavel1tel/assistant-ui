@@ -1,5 +1,17 @@
 # assistant-stream
 
+## 0.1.2
+
+### Patch Changes
+
+- chore: update deps
+
+## 0.1.1
+
+### Patch Changes
+
+- fix: throw error when LineDecoderStream ends with incomplete line instead of emitting it
+
 ## 0.1.0
 
 ### Patch Changes
