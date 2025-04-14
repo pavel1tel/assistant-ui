@@ -432,7 +432,7 @@ export const testFunc = <
             execute: (a: inferParameters<T[typeof prop]["parameters"]>) => A;
             render: (a: { result: A }) => U;
           }) => {
-            console.log("test: ", prop, target);
+            console.log("test: ", prop, target, a);
           },
         };
       },
