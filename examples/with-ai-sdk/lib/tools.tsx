@@ -93,10 +93,23 @@ const t = assistantUIToolbox2<Tools>({
   getLocationFromUser: {
     execute: async (args) => `args + ${args}`,
   },
-  test: {
-    execute: async (args) => `args + ${args}`,
-  },
+  // test: {
+  //   execute: async (args) => `args + ${args}`,
+  // },
 });
+
+const n = {
+  getLocationFromUser: {
+    // execute: async (args) => `args + ${args}`,
+  },
+  // test: {
+  //   execute: async (args) => `args + ${args}`,
+  // },
+};
+
+type ah = keyof typeof n;
+
+const test: ah = "getLocationFromUser";
 
 // const ta = t.getUI({
 //   toolName: "test" as const,
@@ -119,5 +132,7 @@ const t = assistantUIToolbox2<Tools>({
 const a = t.getUI({
   toolName: "test",
   test: true,
-  render: (args) => <>{JSON.stringify(args)}</>,
+  r: "",
+  // r: ""
+  // render: (args) => <>{JSON.stringify(args)}</>,
 });

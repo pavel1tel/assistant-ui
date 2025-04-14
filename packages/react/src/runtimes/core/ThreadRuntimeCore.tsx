@@ -507,12 +507,36 @@ type GetUIArgs<T extends AssistantUITools, ToolName extends keyof T> = {
   parameters: GetParameters<T, ToolName>;
 };
 
+type ArgsKeysWithExecute<A> = {
+  [Key in keyof A]: A[Key] extends undefined ? never : A[Key];
+}[keyof A];
+
+type CorrectRender<
+  Key,
+  A,
+  T extends AssistantUITools,
+> = Key extends keyof KeysWithoutNeed<T>
+  ? "execute on initial"
+  : Key extends keyof ArgsKeysWithExecute<A>
+    ? "execute on args"
+    : "neither";
+
+type Sigh<
+  Key,
+  A,
+  T extends AssistantUITools,
+> = Key extends keyof KeysWithoutNeed<T>
+  ? Key
+  : Key extends keyof ArgsKeysWithExecute<A>
+    ? Key
+    : Key;
+
 export function assistantUIToolbox2<
   T extends AssistantUITools,
-  Args = Partial<
+  Args extends Partial<
     ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
-  >,
->(args: Args) {
+  > = any,
+>(a: Args) {
   // return { getUI: getUI<T> };
   // const getUI = ({
   //   toolName
@@ -526,47 +550,55 @@ export function assistantUIToolbox2<
   //   }
   // }
 
-  type ArgsKeysWithExecute<A> = {
-    [Key in keyof A]: A[Key] extends undefined ? never : A[Key];
-  }[keyof A];
-
-  type CorrectRender<Key, A> = Key extends keyof KeysWithoutNeed<T>
-    ? "execute on initial"
-    : Key extends keyof ArgsKeysWithExecute<A>
-      ? "execute on args"
-      : "neither";
-
   const getUI = <
-    ToolName extends KeysWithoutNeed<T> | keyof Args,
+    ToolName extends keyof Args2,
+    Args2 = typeof a,
     // Execute,
     // Result,
     // >(test: ToolName): T[ToolName]["parameters"];
-  >(args: {
-    toolName: ToolName;
-    test: CorrectRender<ToolName, typeof args>;
-    render: (args: {
-      result: T[ToolName]["execute"] extends (...args: any) => PromiseLike<any>
-        ? Awaited<ReturnType<T[ToolName]["execute"]>>
-        : never;
-    }) => React.ReactNode;
-  }) => {
+    // Args = Partial<
+    //   ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
+    // >,
+  >(
+    args: {
+      toolName: ToolName;
+      test: ToolName extends keyof Args ? "yes" : "no";
+    } & (ToolName extends keyof Args2
+      ? {
+          // render: (args: {
+          //   result: Args2[ToolName] extends (...args: any) => PromiseLike<any>
+          //     ? Awaited<ReturnType<Args2[ToolName]>>
+          //     : never;
+          // }) => React.ReactNode;
+          r: Args;
+        }
+      : {
+          render: (args: {
+            result: T[ToolName]["execute"] extends (
+              ...args: any
+            ) => PromiseLike<any>
+              ? Awaited<ReturnType<T[ToolName]["execute"]>>
+              : never;
+          }) => React.ReactNode;
+        }),
+  ) => {
     return args.render;
   };
-  const getUI2 = <
-    ToolName extends keyof T,
-    // Execute,
-    // Result,
-    // >(test: ToolName): T[ToolName]["parameters"];
-  >(args: {
-    toolName: ToolName;
-    render: (args: {
-      result: T[ToolName]["execute"] extends (...args: any) => PromiseLike<any>
-        ? Awaited<ReturnType<T[ToolName]["execute"]>>
-        : never;
-    }) => React.ReactNode;
-  }) => {
-    return args.render;
-  };
+  // const getUI2 = <
+  //   ToolName extends keyof T,
+  //   // Execute,
+  //   // Result,
+  //   // >(test: ToolName): T[ToolName]["parameters"];
+  // >(args: {
+  //   toolName: ToolName;
+  //   render: (args: {
+  //     result: T[ToolName]["execute"] extends (...args: any) => PromiseLike<any>
+  //       ? Awaited<ReturnType<T[ToolName]["execute"]>>
+  //       : never;
+  //   }) => React.ReactNode;
+  // }) => {
+  //   return args.render;
+  // };
 
   return { getUI: getUI };
 }
