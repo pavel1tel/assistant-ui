@@ -297,16 +297,27 @@ export type ToolsWithout<T extends AssistantUITools> = {
 type AllArgs<
   A extends AssistantUITools,
   B extends keyof A,
-  C extends Pick<A, B> = Pick<A, B>,
+  C extends Pick<A, B> = Pick<A, keyof A>,
 > = {
   [K in keyof C as C[K] extends { execute: undefined } ? K : never]: {
     execute: (...args: inferParameters<C[K]["parameters"]>) => PromiseLike<any>;
   };
 };
 
-// type OtherArgs<A extends AssistantUITools> = {
-//   [K in keyof A]: A[K] extends { execute: undefined } ? never : A[K];
-// };
+type AllArgs2<
+  A extends AssistantUITools,
+  B extends keyof A,
+  Z extends AllArgs<A, B>,
+> = {
+  // [K in keyof C as C[K] extends { execute: undefined } ? K : never]: {
+  [K in keyof Z]: {
+    execute: Z[K]["execute"];
+  };
+};
+
+type OtherArgs<A extends AssistantUITools> = {
+  [K in keyof A]: A[K] extends { execute: undefined } ? never : A[K];
+};
 
 // type WtfArgs<All extends AssistantUITools, Key extends keyof All> = {
 //   toolName: Key;
@@ -334,7 +345,7 @@ type CustomReturnType<T> = T extends {
   execute: (...args: any) => PromiseLike<infer R>;
 }
   ? R
-  : T;
+  : never;
 
 // type FuncArgs<All extends AssistantUITools, Args extends string> = {
 //   toolName: Args;
@@ -376,30 +387,90 @@ type Func<All extends AssistantUITools> = (
 ) => FuncArgs<All>;
 
 export const testFunc = <
+  // T extends AssistantUITools,
+  // B extends keyof ToolsWithout<T> = keyof ToolsWithout<T>,
   T extends AssistantUITools,
-  B extends keyof ToolsWithout<T> = keyof ToolsWithout<T>,
->(
-  a: AllArgs<T, B>,
-): Func<T & ToolsWithout<T>> => {
-  // type A = typeof a;
-  // return a as unknown as ToolsWithout<T>[A];
-  // return {
-  //   get: (c: keyof AllArgs<T, B>) => {
-  //     return a[c];
-  //   },
-  // };
-  // return a;
-  // const res = {} as {
-  //   [I in keyof AllArgs<T, B>]: AllArgs<T, B>[I];
-  // };
-  // Object.entries(a).forEach(([key, value]) => {
-  //   const k = key as ToolName;
-  //   console.log(key, value);
-  //   res[k] = value;
-  // });
-  // return res;
+>() =>
+  // : Func<T & ToolsWithout<T>>
+  {
+    // type A = typeof a;
+    // return a as unknown as ToolsWithout<T>[A];
+    // return {
+    //   get: (c: keyof AllArgs<T, B>) => {
+    //     return a[c];
+    //   },
+    // };
+    // return a;
+    // const res = {} as {
+    //   [I in keyof AllArgs<T, B>]: AllArgs<T, B>[I];
+    // };
+    // Object.entries(a).forEach(([key, value]) => {
+    //   const k = key as ToolName;
+    //   console.log(key, value);
+    //   res[k] = value;
+    // });
+    // return res;
+    // return () => {
+    //   // console.log(a);
+    //   // return a["getLocationFromUser"]["execute"];
+    //   // return a;
+    // };
 
-  return (a) => {
-    console.log(a);
+    type Sigh<T extends AssistantUITools> = {
+      [K in keyof T]: {
+        getUI: <A, U>(a: {
+          execute: (a: inferParameters<T[K]["parameters"]>) => A;
+          render: (a: { result: A }) => U;
+        }) => U;
+      };
+    };
+
+    return new Proxy({} as Sigh<T>, {
+      get: (target, prop: string) => {
+        return {
+          getUI: <A, U>(a: {
+            execute: (a: inferParameters<T[typeof prop]["parameters"]>) => A;
+            render: (a: { result: A }) => U;
+          }) => {
+            console.log("test: ", prop, target);
+          },
+        };
+      },
+    });
   };
-};
+
+// type OkDen<Args extends (...args: any) => any, Result, Additional> = {
+//   args: Args;
+//   res: (a: ReturnType<Args>) => Result;
+//   additional: ReturnType<Result>;
+// };
+
+// type tf = "test" | "test2";
+
+// export const test = <Args extends (...args: any) => any, Result, Additional>(
+//   a: OkDen<Args, Result, Additional>,
+// ): OkDen<Args, Result, Additional> => {
+//   return a;
+// };
+
+// test({
+//   args: () => "test",
+//   res: (a) => "lying",
+//   additional: 1,
+// });
+
+// function chain<T, U, V>(config: {
+//   first: () => T;
+//   second: (value: T) => U;
+//   third: (value: U) => V;
+// }): V {
+//   const firstResult = config.first(); // type: T
+//   const secondResult = config.second(firstResult); // type: U
+//   return config.third(secondResult); // type: V
+// }
+
+// chain({
+//   first: () => "test",
+//   second: (a) => 1,
+//   third: (a) => a + "test",
+// });
