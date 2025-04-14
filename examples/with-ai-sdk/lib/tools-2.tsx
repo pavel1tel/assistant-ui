@@ -21,11 +21,11 @@ const aiSDKTools = {
       return Number(tempCelsius.toFixed(1)); // Return with 1 decimal place
     },
   }),
-  getLocationFromUser: tool({
-    description:
-      "Asks the user for their location if the user does provide one.",
-    parameters: z.array(z.string()),
-  }),
+  // getLocationFromUser: tool({
+  //   description:
+  //     "Asks the user for their location if the user does provide one.",
+  //   parameters: z.array(z.string()),
+  // }),
   //   test: tool({
   //     description:
   //       "Asks the user for their location if the user does provide one.",
@@ -37,4 +37,5 @@ const aiSDKTools = {
   //   }),
 } satisfies AssistantUITools;
 
-export const ah = assistantUIToolBox<typeof aiSDKTools>();
+export type Tools = typeof aiSDKTools;
+export const tools = aiSDKTools;

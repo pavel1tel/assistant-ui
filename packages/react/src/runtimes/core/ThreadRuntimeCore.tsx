@@ -1,6 +1,14 @@
 import { z } from "zod";
-import { ModelContext } from "../../model-context";
-import { AppendMessage, ThreadMessage } from "../../types";
+import {
+  makeAssistantToolUI,
+  ModelContext,
+  useAssistantToolUI,
+} from "../../model-context";
+import {
+  AppendMessage,
+  ThreadMessage,
+  ToolCallContentPartComponent,
+} from "../../types";
 import { RunConfig } from "../../types/AssistantTypes";
 import type { Unsubscribe } from "../../types/Unsubscribe";
 import { SpeechSynthesisAdapter } from "../adapters/speech/SpeechAdapterTypes";
@@ -204,10 +212,10 @@ type inferParameters<PARAMETERS extends ToolParameters> =
 export const assistantUIToolBox = <T extends AssistantUITools>() => {
   type Sigh<T extends AssistantUITools> = {
     [K in keyof T]: {
-      getUI: <A, U>(a: {
+      getUI: <A>(a: {
         execute: (a: inferParameters<T[K]["parameters"]>) => A;
-        render: (a: { result: A }) => U;
-      }) => U;
+        render: (a: { result: A }) => React.ReactNode;
+      }) => ReturnType<typeof makeAssistantToolUI>;
     };
   };
 
@@ -216,9 +224,34 @@ export const assistantUIToolBox = <T extends AssistantUITools>() => {
       return {
         getUI: <A, U>(a: {
           execute: (a: inferParameters<T[typeof prop]["parameters"]>) => A;
-          render: (a: { result: A }) => U;
+          // render: (a: { result: A }) => React.ReactNode;
+          render: ToolCallContentPartComponent<
+            inferParameters<T[typeof prop]["parameters"]>,
+            A
+          >;
         }) => {
+          // // eslint-disable-next-line react-hooks/rules-of-hooks
+          // useAssistantToolUI({
+          //   toolName: prop,
+          //   // render: () => {
+          //   //   console.log("test: ", prop, target, a);
+          //   //   return a.render;
+          //   // },
+          //   render: a.render,
+          // });
+
           console.log("test: ", prop, target, a);
+
+          // const Wrapper = ({ children }: { children: React.ReactNode }) => {
+          //   return <>{children}</>;
+          // };
+
+          // return a.render;
+
+          return makeAssistantToolUI({
+            toolName: prop,
+            render: a.render,
+          });
         },
       };
     },
