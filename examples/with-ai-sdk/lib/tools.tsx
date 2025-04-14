@@ -10,10 +10,11 @@ const aiSDKTools = {
     }),
     execute: async ({ location }) => {
       // Generate a random temperature between 0°C and 35°C
-
-      console.log(location);
       const tempCelsius = Math.random() * 35;
-      return Number(tempCelsius.toFixed(1)); // Return with 1 decimal place
+      return {
+        location: location,
+        tempCelsius: Number(tempCelsius.toFixed(1)),
+      };
     },
   }),
 

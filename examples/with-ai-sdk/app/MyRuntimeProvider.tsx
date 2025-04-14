@@ -24,6 +24,10 @@ const GetLocationFromUser = toolbox.getLocationFromUser.getTool({
 
 const Weather = toolbox.weather.getTool({
   render: ({ result }) => {
+    if (!result) {
+      return null;
+    }
+
     return (
       <div className="mx-auto flex max-w-sm items-center space-x-4 rounded-xl bg-white p-6 shadow-lg">
         <div className="shrink-0">
@@ -34,8 +38,10 @@ const Weather = toolbox.weather.getTool({
           <div className="text-xl font-medium text-black">Weather Report</div>
           <p className="text-slate-500">
             The weather in{" "}
-            <span className="font-semibold text-blue-600">{result}</span> is{" "}
-            <span className="font-bold">20°C</span>
+            <span className="font-semibold text-blue-600">
+              {result.location}
+            </span>{" "}
+            is <span className="font-bold">{result.tempCelsius}°C</span>
           </p>
         </div>
       </div>
