@@ -28,7 +28,7 @@
     "conversational-ui",
     "conversational-ai"
   ],
-  "version": "0.9.0",
+  "version": "0.9.1",
   "license": "MIT",
   "exports": {
     ".": {
@@ -60,15 +60,15 @@
     "test:mutation": "stryker run"
   },
   "dependencies": {
-    "@radix-ui/primitive": "^1.1.1",
-    "@radix-ui/react-compose-refs": "^1.1.1",
-    "@radix-ui/react-context": "^1.1.1",
-    "@radix-ui/react-popover": "^1.1.6",
-    "@radix-ui/react-primitive": "^2.0.2",
-    "@radix-ui/react-slot": "^1.1.2",
-    "@radix-ui/react-use-callback-ref": "^1.1.0",
-    "@radix-ui/react-use-escape-keydown": "^1.1.0",
-    "assistant-stream": "^0.1.0",
+    "@radix-ui/primitive": "^1.1.2",
+    "@radix-ui/react-compose-refs": "^1.1.2",
+    "@radix-ui/react-context": "^1.1.2",
+    "@radix-ui/react-popover": "^1.1.7",
+    "@radix-ui/react-primitive": "^2.0.3",
+    "@radix-ui/react-slot": "^1.2.0",
+    "@radix-ui/react-use-callback-ref": "^1.1.1",
+    "@radix-ui/react-use-escape-keydown": "^1.1.1",
+    "assistant-stream": "^0.1.2",
     "nanoid": "5.1.5",
     "react-textarea-autosize": "^8.5.9",
     "zod": "^3.24.2",
@@ -89,14 +89,14 @@
     }
   },
   "devDependencies": {
-    "@assistant-ui/tsbuildutils": "workspace:^",
+    "@assistant-ui/tsbuildutils": "workspace:*",
     "@assistant-ui/tsconfig": "workspace:*",
     "@stryker-mutator/core": "^8.7.1",
     "@stryker-mutator/vitest-runner": "^8.7.1",
     "@types/json-schema": "^7.0.15",
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.14.1",
     "eslint": "^9",
-    "eslint-config-next": "15.2.4",
+    "eslint-config-next": "15.3.0",
     "tsx": "^4.19.3",
     "vitest": "^3.1.1"
   },
@@ -113,6 +113,6 @@
     "url": "https://github.com/assistant-ui/assistant-ui/issues"
   },
   "engines": {
-    "node": ">=20.10.0"
+    "node": ">=20.0.0"
   }
 }

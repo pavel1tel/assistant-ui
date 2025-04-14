@@ -1,6 +1,6 @@
 {
   "name": "assistant-stream",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "license": "MIT",
   "exports": {
     ".": {
@@ -46,15 +46,18 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsx scripts/build.mts"
+    "build": "tsx scripts/build.mts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@assistant-ui/tsconfig": "workspace:*",
-    "ai": "^4.3.2",
+    "ai": "^4.3.5",
     "eslint": "^9",
-    "eslint-config-next": "15.2.4",
+    "eslint-config-next": "15.3.0",
     "tsup": "8.4.0",
-    "tsx": "^4.19.3"
+    "tsx": "^4.19.3",
+    "vitest": "^1.6.1"
   },
   "publishConfig": {
     "access": "public"

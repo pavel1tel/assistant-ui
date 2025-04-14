@@ -1,5 +1,23 @@
 # assistant-ui
 
+## 0.0.44
+
+### Patch Changes
+
+- cli: drop version option
+
+## 0.0.43
+
+### Patch Changes
+
+- 94e9f71: feat(cli): add command tailwind v4 compat
+
+## 0.0.42
+
+### Patch Changes
+
+- chore: update deps
+
 ## 0.0.41
 
 ### Patch Changes
