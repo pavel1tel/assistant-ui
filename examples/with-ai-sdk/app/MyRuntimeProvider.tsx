@@ -13,7 +13,6 @@ import { useVercelUseChatRuntime } from "@assistant-ui/react-ai-sdk";
 import { useChat } from "@ai-sdk/react";
 import { Tools } from "@/lib/tools-2";
 import { assistantUIToolBox } from "@assistant-ui/react/runtimes/core/ThreadRuntimeCore";
-import { z } from "zod";
 // import { z } from "zod";
 
 export const toolbox = assistantUIToolBox<Tools>();

@@ -1,12 +1,9 @@
 import { z } from "zod";
 import {
   AssistantTool,
-  AssistantToolProps,
-  makeAssistantTool,
   makeAssistantToolUI,
   ModelContext,
   useAssistantTool,
-  useAssistantToolUI,
 } from "../../model-context";
 import {
   AppendMessage,
@@ -22,6 +19,7 @@ import {
   ComposerRuntimeCore,
   ThreadComposerRuntimeCore,
 } from "./ComposerRuntimeCore";
+import { Vercel_AI_SDK_Tool } from "@assistant-ui/react/types/vercel";
 
 export type RuntimeCapabilities = {
   readonly switchToBranch: boolean;
@@ -34,7 +32,6 @@ export type RuntimeCapabilities = {
   readonly feedback: boolean;
 };
 
-// Mark
 export type AddToolResultOptions = {
   messageId: string;
   toolName: string;
@@ -133,90 +130,13 @@ export type ThreadRuntimeCore = Readonly<{
 // TODO: Add langchain / langgraph support.
 // type LangChainToolShim = {}
 
-interface ToolExecutionOptions {
-  /**
-   * The ID of the tool call. You can use it e.g. when sending tool-call related information with stream data.
-   */
-  toolCallId: string;
-  /**
-   * Messages that were sent to the language model to initiate the response that contained the tool call.
-   * The messages **do not** include the system prompt nor the assistant response that contained the tool call.
-   */
-  messages: any[];
-  /**
-   * An optional abort signal that indicates that the overall operation should be aborted.
-   */
-  abortSignal?: AbortSignal;
-}
-/**
-A tool contains the description and the schema of the input that the tool expects.
-This enables the language model to generate the input.
-
-The tool can also contain an optional execute function for the actual execution function of the tool.
- */
-type Tool<PARAMETERS extends ToolParameters = any, RESULT = any> = {
-  /**
-  The schema of the input that the tool expects. The language model will use this to generate the input.
-  It is also used to validate the output of the language model.
-  Use descriptions to make the input understandable for the language model.
-     */
-  parameters: PARAMETERS;
-  /**
-  An optional description of what the tool does.
-  Will be used by the language model to decide whether to use the tool.
-  Not used for provider-defined tools.
-     */
-  description?: string;
-  /**
-  Optional conversion function that maps the tool result to multi-part tool content for LLMs.
-     */
-  experimental_toToolResultContent?: (result: RESULT) => any[];
-  /**
-  An async function that is called with the arguments from the tool call and produces a result.
-  If not provided, the tool will not be executed automatically.
-  
-  @args is the input of the tool call.
-  @options.abortSignal is a signal that can be used to abort the tool call.
-     */
-  execute?: (
-    args: inferParameters<PARAMETERS>,
-    options: ToolExecutionOptions,
-  ) => PromiseLike<RESULT>;
-} & (
-  | {
-      /**
-Function tool.
-     */
-      type?: undefined | "function";
-    }
-  | {
-      /**
-Provider-defined tool.
-     */
-      type: "provider-defined";
-      /**
-The ID of the tool. Should follow the format `<provider-name>.<tool-name>`.
-     */
-      id: `${string}.${string}`;
-      /**
-The arguments for configuring the tool. Must match the expected arguments defined by the provider for this tool.
-     */
-      args: Record<string, unknown>;
-    }
-);
-
 export type ToolName = string;
-export type AssistantUITools = Record<ToolName, Tool<any, any>>;
-
-type ToolParameters = z.ZodTypeAny;
-export type PARAMETERS = z.ZodTypeAny;
-type inferParameters<PARAMETERS extends ToolParameters> =
-  PARAMETERS extends z.ZodTypeAny ? z.infer<PARAMETERS> : never;
+export type AssistantUITools = Record<ToolName, Vercel_AI_SDK_Tool<any, any>>;
 
 type InternalMakeAssistantToolArgs<TResult> = {
   toolName: string;
   parameters: z.ZodTypeAny;
-  execute: (a: inferParameters<z.ZodTypeAny>) => TResult;
+  // execute: (a: Vercel_AI_SDK_inferParameters<z.ZodTypeAny>) => TResult;
 };
 
 export const _internal_makeAssistantTool = <
@@ -225,12 +145,11 @@ export const _internal_makeAssistantTool = <
 >(
   tool: TArgs,
 ) => {
-  console.log("tool: ", tool);
   const Tool: AssistantTool = () => {
     useAssistantTool({
       toolName: tool.toolName,
       parameters: tool.parameters,
-      execute: tool.execute,
+      // execute: tool.execute,
     });
     return null;
   };
@@ -240,21 +159,14 @@ export const _internal_makeAssistantTool = <
 
 type CustomReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
 
-// ToolCallContentPartComponent<inferParameters<T[typeof prop]["parameters"]>, A>;
-
 export const assistantUIToolBox = <T extends AssistantUITools>() => {
-  type Sigh<T extends AssistantUITools> = {
+  type ToolBox<T extends AssistantUITools> = {
     [K in keyof T]: {
       getTool: <A>(a: {
-        // execute: (a: inferParameters<T[K]["parameters"]>) => A;
-        execute?: T[K]["execute"] extends undefined
-          ? (a: inferParameters<T[K]["parameters"]>) => A
-          : never;
-        // render?: (a: {
-        //   result: T[K]["execute"] extends undefined
-        //     ? Awaited<A>
-        //     : Awaited<CustomReturnType<T[K]["execute"]>>;
-        // }) => React.ReactNode;
+        // TODO: Add support for client side tool execution
+        // execute?: T[K]["execute"] extends undefined
+        //   ? (a: Vercel_AI_SDK_inferParameters<T[K]["parameters"]>) => A
+        //   : never;
         render?: ToolCallContentPartComponent<
           T[K]["execute"] extends undefined
             ? Awaited<A>
@@ -262,59 +174,33 @@ export const assistantUIToolBox = <T extends AssistantUITools>() => {
           T[K]["execute"] extends undefined
             ? Awaited<A>
             : Awaited<CustomReturnType<T[K]["execute"]>>
-          // Awaited<CustomReturnType<T[K]["execute"]>>
         >;
       }) => ReturnType<typeof makeAssistantToolUI>;
     };
   };
 
-  return new Proxy({} as Sigh<T>, {
-    get: (target, prop: string) => {
-      console.log("prop: ", prop);
+  return new Proxy({} as ToolBox<T>, {
+    get: (_, prop) => {
+      if (typeof prop !== "string") {
+        throw new Error("Invalid tool name");
+      }
       return {
-        getTool: <A, U>(a: {
-          execute: T[typeof prop]["execute"] extends undefined
-            ? (a: inferParameters<T[typeof prop]["parameters"]>) => A
-            : never;
-          // render: (a: { result: A }) => React.ReactNode;
-          render?: ToolCallContentPartComponent<
-            inferParameters<T[typeof prop]["parameters"]>,
-            A
-          >;
-        }) => {
-          // // eslint-disable-next-line react-hooks/rules-of-hooks
-          // useAssistantToolUI({
-          //   toolName: prop,
-          //   // render: () => {
-          //   //   console.log("test: ", prop, target, a);
-          //   //   return a.render;
-          //   // },
-          //   render: a.render,
-          // });
-
-          console.log("test: ", prop, target, a);
-
-          // const Wrapper = ({ children }: { children: React.ReactNode }) => {
-          //   return <>{children}</>;
-          // };
-
-          // return a.render;
-
+        getTool: (a) => {
           if (a.render) {
             return makeAssistantToolUI({
               toolName: prop,
-              ...(a.execute ? { execute: a.execute } : {}),
+              // ...(a.execute ? { execute: a.execute } : {}),
               render: a.render,
             });
           } else {
             return _internal_makeAssistantTool({
               toolName: prop,
               parameters: z.any(),
-              execute: a.execute,
+              // execute: a.execute,
             });
           }
         },
-      };
+      } as ToolBox<T>[typeof prop];
     },
   });
 };
