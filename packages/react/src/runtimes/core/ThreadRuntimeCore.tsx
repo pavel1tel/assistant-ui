@@ -410,15 +410,23 @@ type KeysWithoutNeed<T extends AssistantUITools> = {
   [K in keyof T]: T[K]["execute"] extends undefined ? never : K;
 }[keyof T];
 
+type Exec<Stuff extends AssistantUITools, Key extends keyof Stuff, Ah> = (
+  args: inferParameters<SafeParameters<Stuff[Key]["parameters"]>>,
+) => PromiseLike<unknown>;
+
 type ClientSideToolInitialArgs<
   T extends AssistantUITools,
   Keys extends KeysWithNeed<T>,
   SlimmedTools extends Pick<T, Keys>,
 > = {
   [Key in keyof SlimmedTools]: {
-    execute?: (
+    execute: (
       args: inferParameters<SafeParameters<SlimmedTools[Key]["parameters"]>>,
     ) => PromiseLike<unknown>;
+    exec: Exec<SlimmedTools, Key>;
+    render: (args: {
+      result: Awaited<ReturnType<Exec<SlimmedTools, Key>>>;
+    }) => React.ReactNode;
   };
 };
 
@@ -531,77 +539,154 @@ type Sigh<
     ? Key
     : Key;
 
-export function assistantUIToolbox2<
-  T extends AssistantUITools,
-  Args extends Partial<
-    ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
-  > = any,
->(a: Args) {
-  // return { getUI: getUI<T> };
-  // const getUI = ({
-  //   toolName
-  // }: {
-  //   toolName: string;
-  // }) => {
-  //   if (args[toolName].execute) {
-  //     return args[toolName].getUI({
-  //       toolName,
-  //     });
-  //   }
-  // }
+// type Arguments<
+//   T extends AssistantUITools,
+//   Keys = keyof KeysWithNeed<T>,
+//   I = Pick<T, KeysWithNeed<T>>,
+// > = {
+//   [K in Keys]: I[K]["execute"] extends undefined
+//     ? {
+//         execute: (
+//           args: inferParameters<
+//             I[K]["parameters"] extends z.ZodTypeAny
+//               ? I[K]["parameters"]
+//               : z.ZodTypeAny
+//           >,
+//         ) => PromiseLike<unknown>;
+//       }
+//     : never;
+// };
 
-  const getUI = <
-    ToolName extends keyof Args2,
-    Args2 = typeof a,
-    // Execute,
-    // Result,
-    // >(test: ToolName): T[ToolName]["parameters"];
-    // Args = Partial<
-    //   ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
-    // >,
-  >(
-    args: {
-      toolName: ToolName;
-      test: ToolName extends keyof Args ? "yes" : "no";
-    } & (ToolName extends keyof Args2
-      ? {
-          // render: (args: {
-          //   result: Args2[ToolName] extends (...args: any) => PromiseLike<any>
-          //     ? Awaited<ReturnType<Args2[ToolName]>>
-          //     : never;
-          // }) => React.ReactNode;
-          r: Args;
-        }
-      : {
-          render: (args: {
-            result: T[ToolName]["execute"] extends (
-              ...args: any
-            ) => PromiseLike<any>
-              ? Awaited<ReturnType<T[ToolName]["execute"]>>
-              : never;
-          }) => React.ReactNode;
-        }),
-  ) => {
-    return args.render;
-  };
-  // const getUI2 = <
-  //   ToolName extends keyof T,
-  //   // Execute,
-  //   // Result,
-  //   // >(test: ToolName): T[ToolName]["parameters"];
-  // >(args: {
-  //   toolName: ToolName;
-  //   render: (args: {
-  //     result: T[ToolName]["execute"] extends (...args: any) => PromiseLike<any>
-  //       ? Awaited<ReturnType<T[ToolName]["execute"]>>
-  //       : never;
-  //   }) => React.ReactNode;
-  // }) => {
-  //   return args.render;
-  // };
+// export function assistantUIToolbox2<
+//   T extends AssistantUITools,
+//   Args = Partial<
+//     ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
+//   >,
+//   // Args,
+// >(a: Args) {
+//   // type P = Parameters<typeof assistantUIToolbox2<T>(a)>;
 
-  return { getUI: getUI };
-}
+//   // a: Record<
+//   //   KeysWithNeed<T>,
+//   //   {
+//   //     execute: (
+//   //       args: inferParameters<SafeParameters<T[Key]["parameters"]>>,
+//   //     ) => PromiseLike<unknown>;
+//   //   }
+//   // a: Partial<
+//   //   ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
+//   // >,
+//   // const make = <
+//   //   Args extends Partial<
+//   //     ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
+//   //   >,
+//   // >(
+//   //   a: Args,
+//   // ) => {
+//   //   return a;
+//   // };
+
+//   // return make<Args>(a);
+
+//   // return (a) => {
+
+//   // }
+
+//   // return { getUI: getUI<T> };
+//   // const getUI = ({
+//   //   toolName
+//   // }: {
+//   //   toolName: string;
+//   // }) => {
+//   //   if (args[toolName].execute) {
+//   //     return args[toolName].getUI({
+//   //       toolName,
+//   //     });
+//   //   }
+//   // }
+
+//   // const getUI = <
+//   //   ToolName extends keyof Args2,
+//   //   Args2 = typeof a,
+//   //   // Execute,
+//   //   // Result,
+//   //   // >(test: ToolName): T[ToolName]["parameters"];
+//   //   // Args = Partial<
+//   //   //   ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
+//   //   // >,
+//   // >(
+//   //   args: {
+//   //     toolName: ToolName;
+//   //     test: ToolName extends keyof Args ? "yes" : "no";
+//   //   } & (ToolName extends keyof Args2
+//   //     ? {
+//   //         // render: (args: {
+//   //         //   result: Args2[ToolName] extends (...args: any) => PromiseLike<any>
+//   //         //     ? Awaited<ReturnType<Args2[ToolName]>>
+//   //         //     : never;
+//   //         // }) => React.ReactNode;
+//   //         r: Args;
+//   //       }
+//   //     : {
+//   //         render: (args: {
+//   //           result: T[ToolName]["execute"] extends (
+//   //             ...args: any
+//   //           ) => PromiseLike<any>
+//   //             ? Awaited<ReturnType<T[ToolName]["execute"]>>
+//   //             : never;
+//   //         }) => React.ReactNode;
+//   //       }),
+//   // ) => {
+//   //   return args.render;
+//   // };
+
+//   // const ret = {} as {
+//   //   [K in keyof typeof a]: (typeof a)[K] extends { execute: Function }
+//   //     ? (typeof a)[K]
+//   //     : never;
+//   // };
+
+//   // for (const key in a) {
+//   //   if (a[key]?.execute) {
+//   //     ret[key] = a[key];
+//   //   }
+//   // }
+
+//   return ret;
+
+//   // type B = typeof a;
+
+//   // return a as {
+//   //   [K in keyof B]: B[K] extends {
+//   //     execute: (...args: any) => PromiseLike<unknown>;
+//   //   }
+//   //     ? B[K]
+//   //     : never;
+//   // };
+
+//   // const getUI2 = <
+//   //   ToolName extends keyof T,
+//   //   // Execute,
+//   //   // Result,
+//   //   // >(test: ToolName): T[ToolName]["parameters"];
+//   // >(args: {
+//   //   toolName: ToolName;
+//   //   render: (args: {
+//   //     result: T[ToolName]["execute"] extends (...args: any) => PromiseLike<any>
+//   //       ? Awaited<ReturnType<T[ToolName]["execute"]>>
+//   //       : never;
+//   //   }) => React.ReactNode;
+//   // }) => {
+//   //   return args.render;
+//   // };
+
+//   // return { getUI: getUI };
+// }
+
+// declare function assistantUIToolbox2<
+//   T extends AssistantUITools,
+//   Arguments = any,
+// >
 
 // Use Pick for getting stuff out of AssistantUITools
 
@@ -622,3 +707,208 @@ export function assistantUIToolbox2<
 //   fruit: "apple",
 //   color: "red",
 // });
+
+// export function assistantUIToolbox2<Arg, T extends AssistantUITools>(
+//   a: Arg,
+// ): Arg {
+//   return a;
+// }
+
+type AUIWTF<Me extends AssistantUITools> = {
+  [K in keyof Me]: Me[K];
+};
+
+// export function assistantUIToolbox2<
+//   Ah extends AssistantUITools,
+//   T = AUIWTF<Ah>,
+//   // Args = ClientSideToolInitialArgs<
+//   //   T,
+//   //   KeysWithNeed<T>,
+//   //   Pick<T, KeysWithNeed<T>>
+//   // >,
+//   // Args = Pick<T, KeysWithNeed<T>>,
+// >(a: string) {
+//   // type GRR = Pick<keyof AUIWTF<Ah>, typeof a>;
+
+//   // for (const key in a) {
+//   //   const k = key as unknown as keyof Args;
+//   //   if (a[k]) {
+//   //     const yo = a[k]?.exeucte;
+//   //     a[k] = {
+//   //       ...a[k],
+//   //     };
+//   //   }
+//   // }
+
+//   type Smush<Key, A, B> = Key extends keyof A
+//     ? A
+//     : Key extends keyof B
+//       ? B
+//       : never;
+
+//   type Final = {
+//     [K in keyof Args & keyof AssistantUITools]: Args[K] extends {
+//       execute: (...args: any) => PromiseLike<unknown>;
+//     }
+//       ? Args[K] & T[K]
+//       : K extends keyof T
+//         ? T[K]
+//         : never;
+//   };
+
+//   // const it = a as unknown as Final;
+
+//   // const res = {} as AssistantUITools;
+
+//   // Object.entries(it).forEach(([key, value]) => {
+//   //   if (value?.execute) {
+//   //     // a[key] = {
+//   //     //   ...value,
+//   //     // };
+//   //     res[key] = value;
+//   //   }
+//   // });
+
+//   // return res;
+
+//   // return new Proxy(it, {
+//   //   get(target, prop: string, receiver) {
+//   //     // if (prop === "getUI") {
+//   //     //   return (args: any) => {
+//   //     //     return args.render;
+//   //     //   };
+//   //     // }
+//   //     // return Reflect.get(target, prop, receiver);
+
+//   //     return (a: {
+//   //       render: (args: { result: typeof a }) => React.ReactNode;
+//   //     }) => {
+//   //       return a.render;
+//   //     };
+//   //   },
+//   // });
+
+//   return {} as unknown as {
+//     [K in keyof AUIWTF<Ah> as K extends typeof a ? K : never]: AUIWTF<Ah>[K];
+//   };
+
+//   // return {
+//   //   wtf: a,
+//   //   test: {} as unknown as T,
+//   // };
+// }
+
+type OneType<
+  T extends AssistantUITools,
+  // A extends Partial<
+  //   ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
+  // >,
+  A extends Record<
+    string,
+    {
+      execute: (...args: any) => PromiseLike<unknown>;
+    }
+  >,
+> = A;
+
+export function assistantUIToolbox2<
+  T extends AssistantUITools,
+  Args extends AssistantUITools = T,
+  // A extends Record<
+  //   keyof T,
+  //   {
+  //     execute: (...args: any) => PromiseLike<unknown>;
+  //   }
+>(
+  // Args = ClientSideToolInitialArgs<
+  //   T,
+  //   KeysWithNeed<T>,
+  //   Pick<T, KeysWithNeed<T>>
+  // >,
+  // Args = Pick<T, KeysWithNeed<T>>,
+  // a: OneType<
+  //   T,
+  //   // ClientSideToolInitialArgs<T, KeysWithNeed<T>, Pick<T, KeysWithNeed<T>>>
+  //   Record<
+  //     string,
+  //     {
+  //       execute: (...args: any) => PromiseLike<unknown>;
+  //     }
+  //   >
+  // >,
+  a: ClientSideToolInitialArgs<
+    Args,
+    KeysWithNeed<Args>,
+    Pick<Args, KeysWithNeed<Args>>
+  >,
+) {
+  // type GRR = Pick<keyof AUIWTF<Ah>, typeof a>;
+
+  // for (const key in a) {
+  //   const k = key as unknown as keyof Args;
+  //   if (a[k]) {
+  //     const yo = a[k]?.exeucte;
+  //     a[k] = {
+  //       ...a[k],
+  //     };
+  //   }
+  // }
+
+  // type Smush<Key, A, B> = Key extends keyof A
+  //   ? A
+  //   : Key extends keyof B
+  //     ? B
+  //     : never;
+
+  // type Final = {
+  //   [K in keyof Args & keyof AssistantUITools]: Args[K] extends {
+  //     execute: (...args: any) => PromiseLike<unknown>;
+  //   }
+  //     ? Args[K] & T[K]
+  //     : K extends keyof T
+  //       ? T[K]
+  //       : never;
+  // };
+
+  // const it = a as unknown as Final;
+
+  // const res = {} as AssistantUITools;
+
+  // Object.entries(it).forEach(([key, value]) => {
+  //   if (value?.execute) {
+  //     // a[key] = {
+  //     //   ...value,
+  //     // };
+  //     res[key] = value;
+  //   }
+  // });
+
+  // return res;
+
+  // return new Proxy(it, {
+  //   get(target, prop: string, receiver) {
+  //     // if (prop === "getUI") {
+  //     //   return (args: any) => {
+  //     //     return args.render;
+  //     //   };
+  //     // }
+  //     // return Reflect.get(target, prop, receiver);
+
+  //     return (a: {
+  //       render: (args: { result: typeof a }) => React.ReactNode;
+  //     }) => {
+  //       return a.render;
+  //     };
+  //   },
+  // });
+
+  // return {} as unknown as {
+  //   [K in keyof AUIWTF<Ah> as K extends typeof a ? K : never]: AUIWTF<Ah>[K];
+  // };
+  return a;
+
+  // return {
+  //   wtf: a,
+  //   test: {} as unknown as T,
+  // };
+}

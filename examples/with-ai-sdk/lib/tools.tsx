@@ -89,27 +89,73 @@ export type Tools = typeof aiSDKTools;
  client side no .execute means addResult.
 */
 
-const t = assistantUIToolbox2<Tools>({
+// const t = assistantUIToolbox2<Tools>({
+//   getLocationFromUser: {
+//     execute: async (args) => `args + ${args}`,
+//   },
+//   // test: {
+//   //   execute: async (args) => `args + ${args}`,
+//   // },
+// });
+
+// const test = assistantUIToolbox2<Tools>()({
+//   getLocationFromUser: {
+//     execute: async (args) => `args + ${args}`,
+//   },
+// });
+
+// const test = assistantUIToolbox2<Tools>({
+//   getLocationFromUser: {
+//     execute: async (args) => `args + ${args}`,
+//   },
+//   test: {
+//     execute: async (args) => `args + ${args}`,
+//   },
+// });
+
+// type zed = (typeof test.wtf)["getLocationFromUser"];
+// type dez = (typeof test.test)["getLocationFromUser"];
+
+// type aa = zed["execute"];
+
+const asset = assistantUIToolbox2<Tools>({
   getLocationFromUser: {
     execute: async (args) => `args + ${args}`,
+    exec: async (args) => `args + ${args}`,
+    render: (args) => <>{JSON.stringify(args.result)}</>,
   },
-  // test: {
-  //   execute: async (args) => `args + ${args}`,
-  // },
+  test: {
+    execute: async (args) => `args + ${args}`,
+    render: (args) => <>{JSON.stringify(args.result)}</>,
+  },
 });
 
-const n = {
-  getLocationFromUser: {
-    // execute: async (args) => `args + ${args}`,
-  },
-  // test: {
-  //   execute: async (args) => `args + ${args}`,
-  // },
-};
+type ttt = typeof asset;
 
-type ah = keyof typeof n;
+// type ah = ReturnType<ttt["getLocationFromUser"]["execute"]>;
 
-const test: ah = "getLocationFromUser";
+// const t = "test" as ah;
+
+// test.
+
+// test.test?.execute
+
+// const err = test;
+
+// const n = {
+//   getLocationFromUser: {
+//     // execute: async (args) => `args + ${args}`,
+//   },
+//   // test: {
+//   //   execute: async (args) => `args + ${args}`,
+//   // },
+// };
+
+// test.test;
+
+// type ah = keyof typeof n;
+
+// const test: ah = "getLocationFromUser";
 
 // const ta = t.getUI({
 //   toolName: "test" as const,
@@ -129,10 +175,10 @@ const test: ah = "getLocationFromUser";
 //   // },
 // });
 
-const a = t.getUI({
-  toolName: "test",
-  test: true,
-  r: "",
-  // r: ""
-  // render: (args) => <>{JSON.stringify(args)}</>,
-});
+// const a = t.getUI({
+//   toolName: "test",
+//   test: true,
+//   r: "",
+//   // r: ""
+//   // render: (args) => <>{JSON.stringify(args)}</>,
+// });
