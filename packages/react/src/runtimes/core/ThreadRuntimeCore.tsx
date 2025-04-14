@@ -118,35 +118,9 @@ export type ThreadRuntimeCore = Readonly<{
   unstable_on(event: ThreadRuntimeEventType, callback: () => void): Unsubscribe;
 }>;
 
-type VercelToolShim =
-  | {
-      description?: string;
-      parameters?: z.ZodTypeAny;
-      // MARK: Does the following two parameters need to be improved?
-      execute?: (...args: any) => PromiseLike<unknown>;
-      experimental_toToolResultContent?: unknown;
-    }
-  | {
-      description?: string;
-      parameters?: z.ZodTypeAny;
-      // MARK: Does the following two parameters need to be improved?
-      // execute?: undefined;
-      execute?: undefined;
-      experimental_toToolResultContent?: unknown;
-    };
-
-type ToolType = VercelToolShim;
-
 // TODO: Add langchain / langgraph support.
 // type LangChainToolShim = {}
 
-// type ToolParameters = z.ZodTypeAny | Schema<any>;
-// type inferParameters<PARAMETERS extends ToolParameters> =
-//   PARAMETERS extends Schema<any>
-//     ? PARAMETERS["_type"]
-//     : PARAMETERS extends z.ZodTypeAny
-//       ? z.infer<PARAMETERS>
-//       : never;
 interface ToolExecutionOptions {
   /**
    * The ID of the tool call. You can use it e.g. when sending tool-call related information with stream data.
@@ -219,30 +193,6 @@ The arguments for configuring the tool. Must match the expected arguments define
     }
 );
 
-/**
-Helper function for inferring the execute args of a tool.
- */
-declare function tool<PARAMETERS extends ToolParameters, RESULT>(
-  tool: Tool<PARAMETERS, RESULT> & {
-    execute: (
-      args: inferParameters<PARAMETERS>,
-      options: ToolExecutionOptions,
-    ) => PromiseLike<RESULT>;
-  },
-): Tool<PARAMETERS, RESULT> & {
-  execute: (
-    args: inferParameters<PARAMETERS>,
-    options: ToolExecutionOptions,
-  ) => PromiseLike<RESULT>;
-};
-declare function tool<PARAMETERS extends ToolParameters, RESULT>(
-  tool: Tool<PARAMETERS, RESULT> & {
-    execute?: undefined;
-  },
-): Tool<PARAMETERS, RESULT> & {
-  execute: undefined;
-};
-
 export type ToolName = string;
 export type AssistantUITools = Record<ToolName, Tool<any, any>>;
 
@@ -251,226 +201,26 @@ export type PARAMETERS = z.ZodTypeAny;
 type inferParameters<PARAMETERS extends ToolParameters> =
   PARAMETERS extends z.ZodTypeAny ? z.infer<PARAMETERS> : never;
 
-// type ToolKeysWithoutExecute<T extends AssistantUITools> = {
-//   [K in keyof T]: T[K] extends { execute: undefined } ? K : never;
-// }[keyof T];
-
-// type Temp<Args extends z.ZodTypeAny, Result = any> = {
-//   args: Args;
-//   result: Result;
-// };
-
-// export type ToolsWithout<T extends AssistantUITools> = {
-//   [K in keyof T]: T[K] extends {
-//     execute: <Result>(
-//       ...args: Temp<T[K]["parameters"], Result>["args"]
-//     ) => PromiseLike<Result>;
-//   }
-//     ? T[K]
-//     : never;
-// };
-
-export type ToolsWithout<T extends AssistantUITools> = {
-  [K in keyof T]: T[K] extends { execute: undefined } ? T[K] : never;
-};
-
-// type Args<ToolName, Execute> = {
-//   toolName: ToolName;
-//   execute: Execute;
-//   // render?: (args: { result: Awaited<ReturnType<Execute>> }) => React.ReactNode;
-// };
-
-// type AllArgs<
-//   A extends AssistantUITools,
-//   B extends keyof A,
-//   C extends Pick<A, B> = Pick<A, B>,
-// > = {
-//   [K in keyof C]: C[K] extends { execute: undefined }
-//     ? {
-//         execute: (
-//           ...args: inferParameters<C[K]["parameters"]>
-//         ) => PromiseLike<any>;
-//       }
-//     : never;
-// };
-
-type AllArgs<
-  A extends AssistantUITools,
-  B extends keyof A,
-  C extends Pick<A, B> = Pick<A, keyof A>,
-> = {
-  [K in keyof C as C[K] extends { execute: undefined } ? K : never]: {
-    execute: (...args: inferParameters<C[K]["parameters"]>) => PromiseLike<any>;
-  };
-};
-
-type AllArgs2<
-  A extends AssistantUITools,
-  B extends keyof A,
-  Z extends AllArgs<A, B>,
-> = {
-  // [K in keyof C as C[K] extends { execute: undefined } ? K : never]: {
-  [K in keyof Z]: {
-    execute: Z[K]["execute"];
-  };
-};
-
-type OtherArgs<A extends AssistantUITools> = {
-  [K in keyof A]: A[K] extends { execute: undefined } ? never : A[K];
-};
-
-// type WtfArgs<All extends AssistantUITools, Key extends keyof All> = {
-//   toolName: Key;
-//   render: (args: {
-//     result: Awaited<ReturnType<Pick<All, Key>>>;
-//   }) => React.ReactNode;
-// };
-
-// type WtfArgs<All extends AssistantUITools> = {
-//   [Key in keyof All]: All[Key] extends {
-//     execute: (...args: any) => PromiseLike<any>;
-//   }
-//     ? {
-//         toolName: Key;
-//         render: (args: {
-//           result: Awaited<ReturnType<All[Key]["execute"]>>;
-//         }) => React.ReactNode;
-//       }
-//     : never;
-// };
-
-// type Func<All extends AssistantUITools> = (a: Partial<WtfArgs<All>>) => void;
-
-type CustomReturnType<T> = T extends {
-  execute: (...args: any) => PromiseLike<infer R>;
-}
-  ? R
-  : never;
-
-// type FuncArgs<All extends AssistantUITools, Args extends string> = {
-//   toolName: Args;
-//   result: (a: {
-//     result: Awaited<CustomReturnType<All["weather"]["execute"]>>;
-//   }) => void;
-// };
-
-// type FuncArgs<All extends AssistantUITools> = {
-//   [K in keyof All]: {
-//     toolName: K;
-//     result: (a: {
-//       result: Awaited<CustomReturnType<All[K]["execute"]>>;
-//     }) => void;
-//   };
-//   //   toolName: Args;
-//   //   result: (a: {
-//   //     result: Awaited<CustomReturnType<All["weather"]["execute"]>>;
-//   //   }) => void;
-// };
-
-type Values<T> = T[keyof T];
-
-type FuncArgs<All extends AssistantUITools> = {
-  [K in keyof All]: {
-    toolName: K;
-    result: (a: {
-      result: Awaited<CustomReturnType<All[K]["execute"]>>;
-    }) => void;
-  };
-  //   toolName: Args;
-  //   result: (a: {
-  //     result: Awaited<CustomReturnType<All["weather"]["execute"]>>;
-  //   }) => void;
-};
-
-type Func<All extends AssistantUITools> = (
-  a: Values<FuncArgs<All>>,
-) => FuncArgs<All>;
-
-export const testFunc = <
-  // T extends AssistantUITools,
-  // B extends keyof ToolsWithout<T> = keyof ToolsWithout<T>,
-  T extends AssistantUITools,
->() =>
-  // : Func<T & ToolsWithout<T>>
-  {
-    // type A = typeof a;
-    // return a as unknown as ToolsWithout<T>[A];
-    // return {
-    //   get: (c: keyof AllArgs<T, B>) => {
-    //     return a[c];
-    //   },
-    // };
-    // return a;
-    // const res = {} as {
-    //   [I in keyof AllArgs<T, B>]: AllArgs<T, B>[I];
-    // };
-    // Object.entries(a).forEach(([key, value]) => {
-    //   const k = key as ToolName;
-    //   console.log(key, value);
-    //   res[k] = value;
-    // });
-    // return res;
-    // return () => {
-    //   // console.log(a);
-    //   // return a["getLocationFromUser"]["execute"];
-    //   // return a;
-    // };
-
-    type Sigh<T extends AssistantUITools> = {
-      [K in keyof T]: {
-        getUI: <A, U>(a: {
-          execute: (a: inferParameters<T[K]["parameters"]>) => A;
-          render: (a: { result: A }) => U;
-        }) => U;
-      };
+export const assistantUIToolBox = <T extends AssistantUITools>() => {
+  type Sigh<T extends AssistantUITools> = {
+    [K in keyof T]: {
+      getUI: <A, U>(a: {
+        execute: (a: inferParameters<T[K]["parameters"]>) => A;
+        render: (a: { result: A }) => U;
+      }) => U;
     };
-
-    return new Proxy({} as Sigh<T>, {
-      get: (target, prop: string) => {
-        return {
-          getUI: <A, U>(a: {
-            execute: (a: inferParameters<T[typeof prop]["parameters"]>) => A;
-            render: (a: { result: A }) => U;
-          }) => {
-            console.log("test: ", prop, target, a);
-          },
-        };
-      },
-    });
   };
 
-// type OkDen<Args extends (...args: any) => any, Result, Additional> = {
-//   args: Args;
-//   res: (a: ReturnType<Args>) => Result;
-//   additional: ReturnType<Result>;
-// };
-
-// type tf = "test" | "test2";
-
-// export const test = <Args extends (...args: any) => any, Result, Additional>(
-//   a: OkDen<Args, Result, Additional>,
-// ): OkDen<Args, Result, Additional> => {
-//   return a;
-// };
-
-// test({
-//   args: () => "test",
-//   res: (a) => "lying",
-//   additional: 1,
-// });
-
-// function chain<T, U, V>(config: {
-//   first: () => T;
-//   second: (value: T) => U;
-//   third: (value: U) => V;
-// }): V {
-//   const firstResult = config.first(); // type: T
-//   const secondResult = config.second(firstResult); // type: U
-//   return config.third(secondResult); // type: V
-// }
-
-// chain({
-//   first: () => "test",
-//   second: (a) => 1,
-//   third: (a) => a + "test",
-// });
+  return new Proxy({} as Sigh<T>, {
+    get: (target, prop: string) => {
+      return {
+        getUI: <A, U>(a: {
+          execute: (a: inferParameters<T[typeof prop]["parameters"]>) => A;
+          render: (a: { result: A }) => U;
+        }) => {
+          console.log("test: ", prop, target, a);
+        },
+      };
+    },
+  });
+};
