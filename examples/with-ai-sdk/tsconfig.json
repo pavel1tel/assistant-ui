@@ -4,6 +4,7 @@
     "target": "ES6",
     "module": "ESNext",
     "incremental": true,
+    "exactOptionalPropertyTypes": false,
     "plugins": [
       {
         "name": "next"
