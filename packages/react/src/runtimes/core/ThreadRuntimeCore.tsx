@@ -1,7 +1,11 @@
 import { z } from "zod";
 import {
+  AssistantTool,
+  AssistantToolProps,
+  makeAssistantTool,
   makeAssistantToolUI,
   ModelContext,
+  useAssistantTool,
   useAssistantToolUI,
 } from "../../model-context";
 import {
@@ -209,23 +213,71 @@ export type PARAMETERS = z.ZodTypeAny;
 type inferParameters<PARAMETERS extends ToolParameters> =
   PARAMETERS extends z.ZodTypeAny ? z.infer<PARAMETERS> : never;
 
+type InternalMakeAssistantToolArgs<TResult> = {
+  toolName: string;
+  parameters: z.ZodTypeAny;
+  execute: (a: inferParameters<z.ZodTypeAny>) => TResult;
+};
+
+export const _internal_makeAssistantTool = <
+  TResult,
+  TArgs extends InternalMakeAssistantToolArgs<TResult>,
+>(
+  tool: TArgs,
+) => {
+  console.log("tool: ", tool);
+  const Tool: AssistantTool = () => {
+    useAssistantTool({
+      toolName: tool.toolName,
+      parameters: tool.parameters,
+      execute: tool.execute,
+    });
+    return null;
+  };
+  Tool.unstable_tool = tool;
+  return Tool;
+};
+
+type CustomReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+// ToolCallContentPartComponent<inferParameters<T[typeof prop]["parameters"]>, A>;
+
 export const assistantUIToolBox = <T extends AssistantUITools>() => {
   type Sigh<T extends AssistantUITools> = {
     [K in keyof T]: {
-      getUI: <A>(a: {
-        execute: (a: inferParameters<T[K]["parameters"]>) => A;
-        render: (a: { result: A }) => React.ReactNode;
+      getTool: <A>(a: {
+        // execute: (a: inferParameters<T[K]["parameters"]>) => A;
+        execute?: T[K]["execute"] extends undefined
+          ? (a: inferParameters<T[K]["parameters"]>) => A
+          : never;
+        // render?: (a: {
+        //   result: T[K]["execute"] extends undefined
+        //     ? Awaited<A>
+        //     : Awaited<CustomReturnType<T[K]["execute"]>>;
+        // }) => React.ReactNode;
+        render?: ToolCallContentPartComponent<
+          T[K]["execute"] extends undefined
+            ? Awaited<A>
+            : Awaited<CustomReturnType<T[K]["execute"]>>,
+          T[K]["execute"] extends undefined
+            ? Awaited<A>
+            : Awaited<CustomReturnType<T[K]["execute"]>>
+          // Awaited<CustomReturnType<T[K]["execute"]>>
+        >;
       }) => ReturnType<typeof makeAssistantToolUI>;
     };
   };
 
   return new Proxy({} as Sigh<T>, {
     get: (target, prop: string) => {
+      console.log("prop: ", prop);
       return {
-        getUI: <A, U>(a: {
-          execute: (a: inferParameters<T[typeof prop]["parameters"]>) => A;
+        getTool: <A, U>(a: {
+          execute: T[typeof prop]["execute"] extends undefined
+            ? (a: inferParameters<T[typeof prop]["parameters"]>) => A
+            : never;
           // render: (a: { result: A }) => React.ReactNode;
-          render: ToolCallContentPartComponent<
+          render?: ToolCallContentPartComponent<
             inferParameters<T[typeof prop]["parameters"]>,
             A
           >;
@@ -248,10 +300,19 @@ export const assistantUIToolBox = <T extends AssistantUITools>() => {
 
           // return a.render;
 
-          return makeAssistantToolUI({
-            toolName: prop,
-            render: a.render,
-          });
+          if (a.render) {
+            return makeAssistantToolUI({
+              toolName: prop,
+              ...(a.execute ? { execute: a.execute } : {}),
+              render: a.render,
+            });
+          } else {
+            return _internal_makeAssistantTool({
+              toolName: prop,
+              parameters: z.any(),
+              execute: a.execute,
+            });
+          }
         },
       };
     },

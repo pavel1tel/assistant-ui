@@ -21,20 +21,26 @@ const aiSDKTools = {
       return Number(tempCelsius.toFixed(1)); // Return with 1 decimal place
     },
   }),
-  // getLocationFromUser: tool({
+  getLocationFromUser: tool({
+    description:
+      "Asks the user for their location if the user does provide one.",
+    parameters: z.object({
+      location: z.string(),
+    }),
+    // execute: async ({ location }) => {
+    //   console.log(location);
+    //   return location;
+    // },
+  }),
+  // test: tool({
   //   description:
   //     "Asks the user for their location if the user does provide one.",
-  //   parameters: z.array(z.string()),
-  // }),
-  //   test: tool({
-  //     description:
-  //       "Asks the user for their location if the user does provide one.",
-  //     parameters: z.object({
-  //       ahhh: z.string(),
-  //     }),
-  //     execute: undefined,
-  //     // execute: async (args) => `args + ${args}`,
+  //   parameters: z.object({
+  //     ahhh: z.string(),
   //   }),
+  // execute: undefined,
+  // execute: async (args) => `args + ${args}`,
+  // }),
 } satisfies AssistantUITools;
 
 export type Tools = typeof aiSDKTools;

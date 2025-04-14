@@ -1,6 +1,6 @@
 import { tools } from "@/lib/tools-2";
 import { openai } from "@ai-sdk/openai";
-import { streamText, tool } from "ai";
+import { streamText } from "ai";
 import { z } from "zod";
 
 export const maxDuration = 30;
@@ -13,6 +13,9 @@ export async function POST(req: Request) {
   const result = streamText({
     model: openai("gpt-4o"),
     messages,
+    onError: (error) => {
+      console.error("error: ", error);
+    },
     // tools: {
     //   weather: tool({
     //     description: "Fetched the current weather in the given location.",
