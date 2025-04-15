@@ -162,7 +162,7 @@ type CustomReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
 export const assistantUIToolBox = <T extends AssistantUITools>() => {
   type ToolBox<T extends AssistantUITools> = {
     [K in keyof T]: {
-      registerTool: <A>(a: {
+      defineToolUI: <A>(a: {
         // TODO: Add support for client side tool execution
         // execute?: T[K]["execute"] extends undefined
         //   ? (a: Vercel_AI_SDK_inferParameters<T[K]["parameters"]>) => A
@@ -189,7 +189,7 @@ export const assistantUIToolBox = <T extends AssistantUITools>() => {
         throw new Error("Invalid tool name");
       }
       return {
-        registerTool: (a) => {
+        defineToolUI: (a) => {
           if (a.render) {
             return makeAssistantToolUI({
               toolName: prop,

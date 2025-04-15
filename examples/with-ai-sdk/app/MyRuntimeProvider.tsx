@@ -8,7 +8,7 @@ import { assistantUIToolBox } from "@assistant-ui/react/runtimes/core/ThreadRunt
 
 export const toolbox = assistantUIToolBox<Tools>();
 
-const GetLocationFromUser = toolbox.getLocationFromUser.registerTool({
+const GetLocationFromUser = toolbox.getLocationFromUser.defineToolUI({
   render: (a) => {
     return (
       <button
@@ -22,7 +22,7 @@ const GetLocationFromUser = toolbox.getLocationFromUser.registerTool({
   },
 });
 
-const Weather = toolbox.weather.registerTool({
+const Weather = toolbox.weather.defineToolUI({
   render: ({ result }) => {
     if (!result) {
       return null;
