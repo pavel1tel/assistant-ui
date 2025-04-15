@@ -25,6 +25,7 @@ const aiSDKTools = {
     parameters: z.object({
       location: z.string(),
     }),
+    execute: async () => undefined,
   }),
 } satisfies AssistantUITools;
 

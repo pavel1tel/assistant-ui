@@ -162,7 +162,7 @@ type CustomReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
 export const assistantUIToolBox = <T extends AssistantUITools>() => {
   type ToolBox<T extends AssistantUITools> = {
     [K in keyof T]: {
-      getTool: <A>(a: {
+      registerTool: <A>(a: {
         // TODO: Add support for client side tool execution
         // execute?: T[K]["execute"] extends undefined
         //   ? (a: Vercel_AI_SDK_inferParameters<T[K]["parameters"]>) => A
@@ -170,10 +170,14 @@ export const assistantUIToolBox = <T extends AssistantUITools>() => {
         render?: ToolCallContentPartComponent<
           T[K]["execute"] extends undefined
             ? Awaited<A>
-            : Awaited<CustomReturnType<T[K]["execute"]>>,
+            : Awaited<CustomReturnType<T[K]["execute"]>> extends undefined
+              ? Awaited<A>
+              : Awaited<CustomReturnType<T[K]["execute"]>>,
           T[K]["execute"] extends undefined
             ? Awaited<A>
-            : Awaited<CustomReturnType<T[K]["execute"]>>
+            : Awaited<CustomReturnType<T[K]["execute"]>> extends undefined
+              ? Awaited<A>
+              : Awaited<CustomReturnType<T[K]["execute"]>>
         >;
       }) => ReturnType<typeof makeAssistantToolUI>;
     };
@@ -185,7 +189,7 @@ export const assistantUIToolBox = <T extends AssistantUITools>() => {
         throw new Error("Invalid tool name");
       }
       return {
-        getTool: (a) => {
+        registerTool: (a) => {
           if (a.render) {
             return makeAssistantToolUI({
               toolName: prop,
