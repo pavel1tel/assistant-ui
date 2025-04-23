@@ -4,6 +4,7 @@
   "compilerOptions": {
     "declaration": false,
     "declarationMap": false,
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["./*"],
       "@assistant-ui/*": ["../../packages/*/src"],

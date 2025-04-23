@@ -4,12 +4,17 @@
   "compilerOptions": {
     "moduleResolution": "bundler",
     "target": "ESNext",
-    "module": "ESNext",
-    "resolveJsonModule": true,
+    "module": "ESNext", 
     "declaration": true,
     "declarationMap": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "lib": ["dom", "dom.iterable", "ES2022"]
+    "lib": ["dom", "dom.iterable", "ES2022"],
+    "paths": {
+      "@assistant-ui/*": ["../../packages/*/src"],
+      "@assistant-ui/react/*": ["../../packages/react/src/*"],
+      "assistant-stream": ["../../packages/assistant-stream/src"],
+      "assistant-stream/*": ["../../packages/assistant-stream/src/*"]
+    }
   }
 }
