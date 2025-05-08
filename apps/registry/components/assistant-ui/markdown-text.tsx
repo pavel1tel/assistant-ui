@@ -7,6 +7,7 @@ import {
   MarkdownTextPrimitive,
   unstable_memoizeMarkdownComponents as memoizeMarkdownComponents,
   useIsMarkdownCodeBlock,
+  type Root,
 } from "@assistant-ui/react-markdown";
 import remarkGfm from "remark-gfm";
 import { FC, memo, useState } from "react";
@@ -15,12 +16,13 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { cn } from "@/lib/utils";
 
-const MarkdownTextImpl = () => {
+const MarkdownTextImpl = ({ hast }: { hast?: Root | undefined }) => {
   return (
     <MarkdownTextPrimitive
       remarkPlugins={[remarkGfm]}
       className="aui-md"
       components={defaultComponents}
+      hast={hast}
     />
   );
 };

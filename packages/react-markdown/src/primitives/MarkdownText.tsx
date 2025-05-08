@@ -25,6 +25,8 @@ import { useCallbackRef } from "@radix-ui/react-use-callback-ref";
 import { CodeOverride } from "../overrides/CodeOverride";
 import { Primitive } from "@radix-ui/react-primitive";
 import classNames from "classnames";
+import { HastRenderer } from "../HastRenderer";
+import { Root } from "hast";
 
 const { useSmooth, useSmoothStatus, withSmoothContextProvider } = INTERNAL;
 
@@ -54,12 +56,14 @@ export type MarkdownTextPrimitiveProps = Omit<
       >
     | undefined;
   smooth?: boolean | undefined;
+  hast?: Root | undefined;
 };
 
 const MarkdownTextInner: FC<MarkdownTextPrimitiveProps> = ({
   components: userComponents,
   componentsByLanguage,
   smooth = true,
+  hast,
   ...rest
 }) => {
   const { text } = useSmooth(useContentPartText(), smooth);
@@ -100,6 +104,11 @@ const MarkdownTextInner: FC<MarkdownTextPrimitiveProps> = ({
       code: CodeComponent,
     };
   }, [CodeComponent, userComponents]);
+
+  // If HAST is provided from server
+  if (hast) {
+    return <HastRenderer hast={hast} components={userComponents} {...rest} />;
+  }
 
   return (
     <ReactMarkdown components={components} {...rest}>
