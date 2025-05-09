@@ -1,5 +1,6 @@
 export {
   MarkdownTextPrimitive,
+  MarkdownTextPrimitiveServer,
   type MarkdownTextPrimitiveProps,
 } from "./primitives/MarkdownText";
 

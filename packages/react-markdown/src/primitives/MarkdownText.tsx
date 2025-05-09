@@ -63,7 +63,6 @@ const MarkdownTextInner: FC<MarkdownTextPrimitiveProps> = ({
   components: userComponents,
   componentsByLanguage,
   smooth = true,
-  hast,
   ...rest
 }) => {
   const { text } = useSmooth(useContentPartText(), smooth);
@@ -105,11 +104,6 @@ const MarkdownTextInner: FC<MarkdownTextPrimitiveProps> = ({
     };
   }, [CodeComponent, userComponents]);
 
-  // If HAST is provided from server
-  if (hast) {
-    return <HastRenderer hast={hast} components={userComponents} {...rest} />;
-  }
-
   return (
     <ReactMarkdown components={components} {...rest}>
       {text}
@@ -147,6 +141,42 @@ const MarkdownTextPrimitiveImpl: ForwardRefExoticComponent<MarkdownTextPrimitive
 
 MarkdownTextPrimitiveImpl.displayName = "MarkdownTextPrimitive";
 
+// For rendering processed HAST from server
+const MarkdownTextInnerServer: FC<
+  Pick<MarkdownTextPrimitiveProps, "hast" | "className">
+> = ({ hast, className }) => {
+  if (!hast) return null;
+  return <HastRenderer hast={hast} className={className} />;
+};
+
+const MarkdownTextPrimitiveImplServer = forwardRef<
+  MarkdownTextPrimitiveElement,
+  Pick<MarkdownTextPrimitiveProps, "hast" | "className"> & {
+    containerProps?: PrimitiveDivProps;
+    containerComponent?: ElementType;
+  }
+>(
+  (
+    { className, containerProps, containerComponent: Container = "div", hast },
+    forwardedRef,
+  ) => {
+    return (
+      <Container
+        {...containerProps}
+        className={classNames(className, containerProps?.className)}
+        ref={forwardedRef}
+      >
+        <MarkdownTextInnerServer hast={hast} className={className} />
+      </Container>
+    );
+  },
+);
+MarkdownTextPrimitiveImplServer.displayName = "MarkdownTextPrimitiveServer";
+
 export const MarkdownTextPrimitive = withSmoothContextProvider(
   MarkdownTextPrimitiveImpl,
+);
+
+export const MarkdownTextPrimitiveServer = withSmoothContextProvider(
+  MarkdownTextPrimitiveImplServer,
 );

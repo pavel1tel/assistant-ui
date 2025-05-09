@@ -4,12 +4,12 @@ import "@assistant-ui/react-markdown/styles/dot.css";
 
 import {
   CodeHeaderProps,
-  MarkdownTextPrimitive,
+  MarkdownTextPrimitiveServer,
   unstable_memoizeMarkdownComponents as memoizeMarkdownComponents,
   useIsMarkdownCodeBlock,
   type Root,
 } from "@assistant-ui/react-markdown";
-import remarkGfm from "remark-gfm";
+// import remarkGfm from "remark-gfm";
 import { FC, memo, useState } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 
@@ -18,10 +18,10 @@ import { cn } from "@/lib/utils";
 
 const MarkdownTextImpl = ({ hast }: { hast?: Root | undefined }) => {
   return (
-    <MarkdownTextPrimitive
-      remarkPlugins={[remarkGfm]}
+    <MarkdownTextPrimitiveServer
+      // remarkPlugins={[remarkGfm]}
       className="aui-md"
-      components={defaultComponents}
+      // components={defaultComponents}
       hast={hast}
     />
   );
