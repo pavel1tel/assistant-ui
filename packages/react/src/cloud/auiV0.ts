@@ -3,10 +3,7 @@ import { MessageStatus } from "../types/AssistantTypes";
 import { fromThreadMessageLike } from "../runtimes/external-store/ThreadMessageLike";
 import { CloudMessage } from "./AssistantCloudThreadMessages";
 import { isJSONValue } from "../utils/json/is-json";
-import {
-  ReadonlyJSONObject,
-  ReadonlyJSONValue,
-} from "../utils/json/json-value";
+import { ReadonlyJSONObject, ReadonlyJSONValue } from "assistant-stream/utils";
 import { ExportedMessageRepositoryItem } from "../runtimes/utils/MessageRepository";
 
 type AuiV0MessageContentPart =
@@ -47,6 +44,7 @@ type AuiV0Message = {
   readonly status?: MessageStatus;
   readonly content: readonly AuiV0MessageContentPart[];
   readonly metadata: {
+    readonly unstable_state?: ReadonlyJSONValue;
     readonly unstable_annotations: readonly ReadonlyJSONValue[];
     readonly unstable_data: readonly ReadonlyJSONValue[];
     readonly steps: readonly {

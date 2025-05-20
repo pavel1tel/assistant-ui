@@ -160,6 +160,7 @@ export class LocalThreadRuntimeCore
       status: { type: "running" },
       content: [],
       metadata: {
+        unstable_state: this.state,
         unstable_annotations: [],
         unstable_data: [],
         steps: [],
@@ -251,6 +252,9 @@ export class LocalThreadRuntimeCore
           ? {
               metadata: {
                 ...message.metadata,
+                ...(m.metadata.unstable_state
+                  ? { unstable_state: m.metadata.unstable_state }
+                  : undefined),
                 ...(annotations
                   ? { unstable_annotations: annotations }
                   : undefined),
