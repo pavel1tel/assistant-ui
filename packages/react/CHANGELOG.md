@@ -1,5 +1,88 @@
 # @assistant-ui/react
 
+## 0.10.20
+
+### Patch Changes
+
+- 8aa3020: Fix: Export missing adapter primitives
+- f69ca69: fix(react): preserve message metadata in useThreadRuntime().append()
+
+## 0.10.19
+
+### Patch Changes
+
+- d0867eb: fix(message): add missing condition in `MessageIf`
+- 52e18bc: feat: addToolResponse ToolResponse support
+- 52e18bc: fix: add support for artifact and isError for langgraph tool calls
+- Updated dependencies [52e18bc]
+  - assistant-stream@0.2.14
+
+## 0.10.18
+
+### Patch Changes
+
+- 3ed39ef: feat: export ContentPartStatus
+
+## 0.10.17
+
+### Patch Changes
+
+- fix: useInlineRender should correctly handle updates
+
+## 0.10.16
+
+### Patch Changes
+
+- fix: Last is not a partial call attempt 3
+- Updated dependencies
+  - assistant-stream@0.2.13
+
+## 0.10.15
+
+### Patch Changes
+
+- fix: add another workaround for Last is not a partial call
+- Updated dependencies
+  - assistant-stream@0.2.12
+
+## 0.10.14
+
+### Patch Changes
+
+- fix: Last is not a partial call error
+- Updated dependencies
+  - assistant-stream@0.2.11
+
+## 0.10.13
+
+### Patch Changes
+
+- 971b05c: feat: useCloudRuntime (wip)
+
+## 0.10.12
+
+### Patch Changes
+
+- chore: update deps
+- Updated dependencies
+  - assistant-stream@0.2.10
+
+## 0.10.11
+
+### Patch Changes
+
+- 6d214b9: add ComposerAttachmentDropzone component to enable file drag and drop
+
+## 0.10.10
+
+### Patch Changes
+
+- 9811ff8: Introduced a new `ErrorPrimitive` component for displaying error messages in the UI, including `ErrorPrimitive.Root` and `ErrorPrimitive.Message`.
+
+  Added `MessagePrimitive.Error` for rendering error states in messages.
+
+- 1a4927a: feat: ThreadListItem.detach()
+
 ## 0.10.9
 
 ### Patch Changes

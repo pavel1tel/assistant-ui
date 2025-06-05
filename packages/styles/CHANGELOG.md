@@ -1,5 +1,37 @@
 # @assistant-ui/styles
 
+## 0.1.11
+
+### Patch Changes
+
+- c58dcf3: feat: Add first class support for Mermaid diagrams
+
+## 0.1.10
+
+### Patch Changes
+
+- chore: update deps
+
+## 0.1.9
+
+### Patch Changes
+
+- bd763a6: fix: shiki styles for non tw users
+
+## 0.1.8
+
+### Patch Changes
+
+- 8bd70ae: fix: error message contrast in dark mode
+
+## 0.1.7
+
+### Patch Changes
+
+- 9811ff8: Introduced a new `ErrorPrimitive` component for displaying error messages in the UI, including `ErrorPrimitive.Root` and `ErrorPrimitive.Message`.
+
+  Added `MessagePrimitive.Error` for rendering error states in messages.
+
 ## 0.1.6
 
 ### Patch Changes

@@ -1,5 +1,37 @@
 # @assistant-ui/react-edge
 
+## 0.2.11
+
+### Patch Changes
+
+- 3fd9ec1: fix: useAssistant should correctly display
+- Updated dependencies [3ed39ef]
+  - @assistant-ui/react@0.10.18
+
+## 0.2.10
+
+### Patch Changes
+
+- chore: update deps
+- Updated dependencies
+  - assistant-stream@0.2.10
+  - @assistant-ui/react@0.10.12
+
+## 0.2.9
+
+### Patch Changes
+
+- 1a4927a: feat: ThreadListItem.detach()
+- Updated dependencies [9811ff8]
+- Updated dependencies [1a4927a]
+  - @assistant-ui/react@0.10.10
+
+## 0.2.8
+
+### Patch Changes
+
+- b625527: feat: useChatRuntime onCancel option
+
 ## 0.2.7
 
 ### Patch Changes

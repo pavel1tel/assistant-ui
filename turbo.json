@@ -10,13 +10,15 @@
         "ASSISTANT_*",
         "JWT_*",
         "ENTELLIGENCE_*",
-        "SENTRY_*",
         "NEXT_PUBLIC_*"
       ]
     },
     "lint": {},
+    "test": {
+      "dependsOn": ["^build"]
+    },
     "deploy": {
-      "dependsOn": ["build", "lint"]
+      "dependsOn": ["build", "lint", "test"]
     },
     "dev": {
       "cache": false,

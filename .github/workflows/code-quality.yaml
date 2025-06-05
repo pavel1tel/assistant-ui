@@ -30,9 +30,10 @@ jobs:
 
       - name: Run ESLint
         run: pnpm eslint
-        continue-on-error: true # Don't fail the workflow if ESLint has errors
-        # TODO: fix all eslint errors
 
       - name: Run Prettier
         run: pnpm prettier
         # This will fail the workflow if Prettier has warnings
+
+      - name: Run Tests
+        run: pnpm test

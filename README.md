@@ -10,6 +10,7 @@
   <a href="https://cal.com/simon-farshid/assistant-ui">Contact Sales</a>
 </p>
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/assistant-ui/assistant-ui)
 [![Weave Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fapp.workweave.ai%2Fapi%2Frepository%2Fbadge%2Forg_GhSIrtWo37b5B3Mv0At3wQ1Q%2F722184017&cacheSeconds=3600)](https://app.workweave.ai/reports/repository/org_GhSIrtWo37b5B3Mv0At3wQ1Q/722184017)
 ![Backed by Y Combinator](https://img.shields.io/badge/Backed_by-Y_Combinator-orange)
 
@@ -17,9 +18,9 @@
 
 ## The UX of ChatGPT in your React app 💬🚀
 
-**assistant-ui** is an open source Typescript/React library for AI chat.
+**assistant-ui** is an open source TypeScript/React library for AI chat.
 
-The library handles essential chat features such as auto-scrolling, accessibility, and real-time updates, while providing easy integration with LangGraph, AI SDK and custom backends.
+The library handles essential chat features such as auto-scrolling, accessibility, and real-time updates, while providing easy integration with LangGraph, AI SDK, and custom backends.
 
 The API of assistant-ui is inspired by libraries like shadcn/ui and cmdk. Instead of a single monolithic chat component, developers get primitive components that can be fully customized.
 
@@ -77,7 +78,7 @@ Sample customization to make a perplexity lookalike:
 
 Hundreds of projects use assistant-ui to build in-app AI assistants, including companies like LangChain, AthenaIntelligence, Browser Use, and more.
 
-With >50k+ monthly downloads, assistant-ui is the most popular UI library for AI chat.
+With >100k monthly downloads, assistant-ui is the most popular UI library for building AI chat.
 
 <img src="https://raw.githubusercontent.com/assistant-ui/assistant-ui/main/.github/assets/growth.png" alt="Growth" style="max-width: 400px;">
 

@@ -1,5 +1,47 @@
 # assistant-stream
 
+## 0.2.14
+
+### Patch Changes
+
+- 52e18bc: feat: ToolResponseLike
+
+## 0.2.13
+
+### Patch Changes
+
+- fix: Last is not a partial call attempt 3
+
+## 0.2.12
+
+### Patch Changes
+
+- fix: add another workaround for Last is not a partial call
+
+## 0.2.11
+
+### Patch Changes
+
+- fix: Last is not a partial call error
+
+## 0.2.10
+
+### Patch Changes
+
+- chore: update deps
+
+## 0.2.9
+
+### Patch Changes
+
+- fix: PlainTextEncoder should ignore part-start/finish
+
+## 0.2.8
+
+### Patch Changes
+
+- fix: close argsTextController when setResponse is called
+
 ## 0.2.7
 
 ### Patch Changes

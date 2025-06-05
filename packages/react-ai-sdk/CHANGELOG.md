@@ -1,5 +1,50 @@
 # @assistant-ui/react-ai-sdk
 
+## 0.10.13
+
+### Patch Changes
+
+- 3fd9ec1: fix: useAssistant should correctly display
+- Updated dependencies [3ed39ef]
+- Updated dependencies [3fd9ec1]
+  - @assistant-ui/react@0.10.18
+  - @assistant-ui/react-edge@0.2.11
+
+## 0.10.12
+
+### Patch Changes
+
+- 971b05c: feat: useCloudRuntime (wip)
+- Updated dependencies [971b05c]
+  - @assistant-ui/react@0.10.13
+  - @assistant-ui/react-edge@0.2.10
+
+## 0.10.11
+
+### Patch Changes
+
+- chore: update deps
+- Updated dependencies
+  - @assistant-ui/react@0.10.12
+  - @assistant-ui/react-edge@0.2.10
+
+## 0.10.10
+
+### Patch Changes
+
+- Updated dependencies [9811ff8]
+- Updated dependencies [1a4927a]
+  - @assistant-ui/react@0.10.10
+  - @assistant-ui/react-edge@0.2.9
+
+## 0.10.9
+
+### Patch Changes
+
+- b625527: feat: useChatRuntime onCancel option
+- Updated dependencies [b625527]
+  - @assistant-ui/react-edge@0.2.8
+
 ## 0.10.8
 
 ### Patch Changes

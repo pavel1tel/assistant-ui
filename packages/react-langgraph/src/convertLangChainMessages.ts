@@ -80,6 +80,7 @@ export const convertLangChainMessages: useExternalMessageConverter.Callback<
         toolCallId: message.tool_call_id,
         result: message.content,
         artifact: message.artifact,
+        isError: message.status === "error",
       };
   }
 };

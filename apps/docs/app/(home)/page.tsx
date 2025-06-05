@@ -15,7 +15,7 @@ import langchain from "./logos/cust/langchain.svg";
 import stack from "./logos/cust/stack.svg";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { MyRuntimeProvider } from "./MyRuntimeProvider";
+import { DocsRuntimeProvider } from "./DocsRuntimeProvider";
 import { Marquee } from "@/components/magicui/marquee";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { StarPill } from "./home/StarPill";
@@ -29,9 +29,9 @@ export default function HomePage() {
       <Hero />
 
       <div className="mx-auto mt-6 flex h-[650px] w-full max-w-screen-xl flex-col overflow-hidden rounded-lg border shadow">
-        <MyRuntimeProvider>
+        <DocsRuntimeProvider>
           <Shadcn />
-        </MyRuntimeProvider>
+        </DocsRuntimeProvider>
       </div>
 
       <Button variant="outline" className="mx-auto mt-6 flex" asChild>
@@ -69,7 +69,7 @@ export default function HomePage() {
               className={buttonVariants({ variant: "outline" })}
               href="https://github.com/assistant-ui/assistant-ui"
             >
-              <span className="mr-2">🌟</span> Star us on Github
+              <span className="mr-2">🌟</span> Star us on GitHub
             </a>
           </div>
         </div>
@@ -107,13 +107,13 @@ function Hero() {
         UX of ChatGPT in your own app
       </h1>
       <p className="text-muted-foreground mb-8 md:text-xl">
-        assistant-ui is the Typescript/React library for{" "}
+        assistant-ui is the TypeScript/React library for{" "}
         <span className="text-foreground">AI Chat</span>.<br />
         Built on <span className="text-foreground">shadcn/ui</span> and{" "}
         <span className="text-foreground">Tailwind</span>.
       </p>
 
-      <div className="mx-auto mt-8 flex items-stretch justify-center gap-4">
+      <div className="mx-auto mt-8 flex flex-col items-stretch justify-center gap-4 sm:flex-row">
         <CopyCommandButton />
 
         <a
@@ -122,7 +122,7 @@ function Hero() {
             buttonVariants({
               size: "lg",
               variant: "outline",
-              className: "bg-background h-12",
+              className: "bg-background h-12 self-center",
             }),
           )}
         >
